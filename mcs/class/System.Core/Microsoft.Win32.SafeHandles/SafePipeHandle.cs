@@ -31,6 +31,7 @@ using System.Runtime.InteropServices;
 using System.Security.AccessControl;
 using System.Security.Permissions;
 using System.Security.Principal;
+using System.IO.Pipes;
 
 namespace Microsoft.Win32.SafeHandles
 {
@@ -41,17 +42,36 @@ namespace Microsoft.Win32.SafeHandles
 		public SafePipeHandle (IntPtr preexistingHandle, bool ownsHandle)
 			: base (ownsHandle)
 		{
-			handle = preexistingHandle;
+      SetHandle (preexistingHandle);
 		}
+ 
+    internal void SetHandle (IntPtr handle)
+    {
+      base.SetHandle(handle);
+    }
+ 
+    /* required for unix tracking of pipe disconnects
+       and must be present here to support constructor accepting PipeHandle args */
+    internal SafePipeHandle DisposalHandle = null;
+
+    /* Required for unix tracking of pipe drain in anonymous pipes 
+       and must be present here to support constructor accepting PipeHandle args */
+    internal SafePipeHandle DrainHandle = null;
 
 		protected override bool ReleaseHandle ()
 		{
-			try {
-				Marshal.FreeHGlobal (handle);
-				return true;
-			} catch (ArgumentException) {
-				return false;
-			}
+      switch (Environment.OSVersion.Platform)
+      {
+        case PlatformID.Win32S:
+        case PlatformID.Win32Windows:
+        case PlatformID.Win32NT:
+        case PlatformID.WinCE:
+          // TODO: close win32 pipe handle
+          return true;
+        default:
+          MonoIOError result;
+          return MonoIO.Close(handle, out result);
+      }
 		}
 	}
 }

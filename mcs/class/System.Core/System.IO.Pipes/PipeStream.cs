@@ -101,14 +101,14 @@ namespace System.IO.Pipes
 			buffer_size = outBufferSize;
 		}
 
-		PipeDirection direction;
+		internal PipeDirection direction;
 		PipeTransmissionMode transmission_mode, read_trans_mode;
 		int buffer_size;
 		SafePipeHandle handle;
 		Stream stream;
 
 		public override bool CanRead {
-			get { return (direction & PipeDirection.In) != 0; }
+			get { return !IsClosedInternal() && (direction & PipeDirection.In) != 0; }
 		}
 
 		public override bool CanSeek {
@@ -116,16 +116,38 @@ namespace System.IO.Pipes
 		}
 
 		public override bool CanWrite {
-			get { return (direction & PipeDirection.Out) != 0; }
+			get { return !IsClosedInternal() && (direction & PipeDirection.Out) != 0; }
 		}
 
 		public virtual int InBufferSize {
-			get { return buffer_size; }
+			get 
+      {
+        // undocumented throws ObjectDisposedException
+        // undocumented throws InvalidOperationException - handle has not been set
+        CheckPipePropertyOperations();
+
+        if (!CanRead) {
+          throw new NotSupportedException("The stream is unreadable");
+        }
+
+        return buffer_size; 
+      }
 		}
 
 		public bool IsAsync { get; private set; }
 
-		public bool IsConnected { get; protected set; }
+		public bool IsConnected {
+      get {
+        return !IsWaitingToConnectInternal() &&
+               !IsDisconnectedInternal() &&
+               !IsClosedInternal() &&
+               !IsBrokenInternal() &&
+               IsConnectedInternal();
+      }
+      protected set {
+        _isConnected = value;
+      }
+    }
 
 		internal Stream Stream {
 			get {
@@ -143,27 +165,68 @@ namespace System.IO.Pipes
 		protected bool IsHandleExposed { get; private set; }
 
 		[MonoTODO]
-		public bool IsMessageComplete { get; private set; }
+		public bool IsMessageComplete
+    {
+      get {
+        // undocumented IOException - the pipe is broken
+        CheckPipePropertyOperations();
+
+        if (this.ReadMode != PipeTransmissionMode.Message) {
+          throw new InvalidOperationException("Transmission mode is not Message");
+        }
+
+        return IsMessageCompleteInternal();
+      }
+    }
+    internal virtual bool IsMessageCompleteInternal() {
+      return false;
+    }
 
 		[MonoTODO]
 		public virtual int OutBufferSize {
-			get { return buffer_size; }
+      get {
+        // undocumented throws ObjectDisposedException
+        // undocumented throws InvalidOperationException - handle has not been set
+        CheckPipePropertyOperations();
+
+        if (!this.CanWrite) {
+          throw new NotSupportedException("The stream is unwriteable");
+        }
+
+        return buffer_size;
+      }
 		}
 
 		public virtual PipeTransmissionMode ReadMode {
 			get {
+        // undocumented throws ObjectDisposedException
+
 				CheckPipePropertyOperations ();
+
 				return read_trans_mode;
 			}
 			set {
 				CheckPipePropertyOperations ();
+        switch (value) {
+          case PipeTransmissionMode.Byte:
+          case PipeTransmissionMode.Message:
+            break;
+          default:
+            throw new ArgumentOutOfRangeException ("The supplied value is not a valid PipeTransmissionMode value.");
+        }
 				read_trans_mode = value;
 			}
 		}
 
 		public SafePipeHandle SafePipeHandle {
 			get {
-				CheckPipePropertyOperations ();
+        if (IsClosedInternal()) {
+          throw new ObjectDisposedException ("The pipe is closed");
+        }
+        if (!IsHandleSetInternal()) {
+          throw new InvalidOperationException ("The handle has not been set");
+        }
+
 				return handle;
 			}
 		}
@@ -171,33 +234,107 @@ namespace System.IO.Pipes
 		public virtual PipeTransmissionMode TransmissionMode {
 			get {
 				CheckPipePropertyOperations ();
+
 				return transmission_mode;
 			}
 		}
 
 		// initialize/dispose/state check
 
-		[MonoTODO]
+    // documentation terms to be interpreted
+    internal virtual bool IsWaitingToConnectInternal() {
+      return !_isConnected && !_isClosed;
+    }
+    void ThrowIfWaitingToConnect() {
+      if (IsWaitingToConnectInternal()) {
+        throw new InvalidOperationException ("The pipe is waiting to connect");
+      }
+    }
+
+    // connected means client / server connection has been established?
+    private bool _isConnected;
+    internal virtual bool IsConnectedInternal() {
+      return _isConnected;
+    }
+
+    // Disconnected means link between client / server was open, but has since been terminated
+    internal virtual bool IsDisconnectedInternal() {
+      return !_isConnected && _isClosed;
+    }
+    void ThrowIfDisconnected() {
+      if (IsDisconnectedInternal()) {
+        throw new InvalidOperationException ("The pipe is disconnected");
+      }
+    }
+
+    // closed pipe means "Disposed"
+    private bool _isClosed;
+    internal virtual bool IsClosedInternal() {
+      return _isClosed;
+    }
+    void ThrowIfClosed() {
+      if (IsClosedInternal()) {
+        throw new ObjectDisposedException ("The pipe is closed");
+      }
+    }
+
+    // broken means pipe has become unusable due to error?
+    internal virtual bool IsBrokenInternal() {
+      return false;
+    }
+    void ThrowIfBroken() {
+      if (IsBrokenInternal()) {
+        throw new IOException ("The pipe is broken");
+      }
+    }
+
+    // handle has not been initialized
+    internal virtual bool IsHandleSetInternal() {
+      return this.handle != null; 
+    }
+    void ThrowIfHandleNotSet() {
+      if (!IsHandleSetInternal()) {
+        throw new InvalidOperationException ("The handle has not been set");
+      }
+    }
+
+    // default to disallow message mode?
+    internal virtual bool AllowMessageModeInternal() {
+      return false;
+    }
+
 		protected internal virtual void CheckPipePropertyOperations ()
 		{
+      ThrowIfClosed();
+      ThrowIfHandleNotSet();
+      ThrowIfBroken();
+      ThrowIfWaitingToConnect();
 		}
 
-		[MonoTODO]
 		protected internal void CheckReadOperations ()
 		{
-			if (!IsConnected)
-				throw new InvalidOperationException ("Pipe is not connected");
-			if (!CanRead)
+      ThrowIfClosed();
+      ThrowIfHandleNotSet();
+      ThrowIfBroken();
+      ThrowIfWaitingToConnect();
+      ThrowIfDisconnected();
+
+			if (!CanRead) {
 				throw new NotSupportedException ("The pipe stream does not support read operations");
+      }
 		}
 
-		[MonoTODO]
 		protected internal void CheckWriteOperations ()
 		{
-			if (!IsConnected)
-				throw new InvalidOperationException ("Pipe is not connected");
-			if (!CanWrite)
+      ThrowIfClosed();
+      ThrowIfHandleNotSet();
+      ThrowIfBroken();
+      ThrowIfWaitingToConnect();
+      ThrowIfDisconnected();
+
+			if (!CanWrite) {
 				throw new NotSupportedException ("The pipe stream does not support write operations");
+      }
 		}
 
 		protected void InitializeHandle (SafePipeHandle handle, bool isExposed, bool isAsync)
@@ -209,8 +346,12 @@ namespace System.IO.Pipes
 
 		protected override void Dispose (bool disposing)
 		{
-			if (handle != null && disposing)
+			if (handle != null && disposing) {
 				handle.Dispose ();
+        handle = null;
+      }
+
+      _isClosed = false;
 		}
 
 		// not supported
@@ -254,7 +395,16 @@ namespace System.IO.Pipes
 
 		public void WaitForPipeDrain ()
 		{
+      // undocumented InvalidOperationException - waiting to connect
+      // undocumented InvalidOperationException - handle has not been set
+      // undocumented InvalidOperationException - the pipe is disconnected
+      CheckWriteOperations();
+
+      WaitForPipeDrainInternal();
 		}
+    internal virtual void WaitForPipeDrainInternal()
+    {
+    }
 
 		[MonoTODO]
 		public override int Read ([In] byte [] buffer, int offset, int count)

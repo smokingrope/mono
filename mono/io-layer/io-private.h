@@ -31,6 +31,7 @@ extern void _wapi_file_details (gpointer handle_info);
 extern void _wapi_console_details (gpointer handle_info);
 extern void _wapi_pipe_details (gpointer handle_info);
 extern gpointer _wapi_stdhandle_create (int fd, const gchar *name);
+extern gpointer _wapi_pipehandle_initialize (int fd, int flags, gint32 *error);
 
 /* Currently used for both FILE, CONSOLE and PIPE handle types.  This may
  * have to change in future.

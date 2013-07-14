@@ -169,6 +169,8 @@ extern gpointer CreateFile(const gunichar2 *name, guint32 fileaccess,
 			   guint32 attrs, gpointer tmplate);
 extern gboolean DeleteFile(const gunichar2 *name);
 extern gpointer GetStdHandle(WapiStdHandle stdhandle);
+extern gint32 ves_icall_System_IO_MonoIO_PollFD(gint32 fd, gint16 events, gint16 *revents, gint32 timeout);
+extern gpointer ves_icall_System_IO_MonoIO_GetPipeHandle(int fd, int flags, gint32 *error);
 extern gboolean ReadFile(gpointer handle, gpointer buffer, guint32 numbytes,
 			 guint32 *bytesread, WapiOverlapped *overlapped);
 extern gboolean WriteFile(gpointer handle, gconstpointer buffer,

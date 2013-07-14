@@ -45,6 +45,7 @@
 #include <mono/io-layer/thread-private.h>
 #include <mono/io-layer/io-portability.h>
 #include <mono/utils/strenc.h>
+#include <mono/utils/mono-poll.h>
 
 #if 0
 #define DEBUG(...) g_message(__VA_ARGS__)
@@ -2133,6 +2134,82 @@ gpointer GetStdHandle(WapiStdHandle stdhandle)
 	}
 	
   done:
+	thr_ret = mono_mutex_unlock (&stdhandle_mutex);
+	g_assert (thr_ret == 0);
+	pthread_cleanup_pop (0);
+	
+	return(handle);
+}
+
+/**
+ * PollFD
+ * @fd: specifies the file descriptor to poll
+ * @events: bitmask of events to poll for
+ * @revents: bitmask of events found during polling
+ * @timeout: duration in milliseconds to poll, -1 for inifinty, 0 for immediate return
+ *
+ * Polls the file descriptor for specified events
+ *
+ * Return value: 1 if any of the polled events are found, 0 if timeout expired, -1 for error
+ */
+gint32 ves_icall_System_IO_MonoIO_PollFD(gint32 fd, gint16 events, gint16 *revents, gint32 timeout)
+{
+  mono_pollfd poll;
+  poll.fd = fd;
+  poll.events = events;
+
+  int result = mono_poll (&poll, 1, timeout);
+  *revents = poll.revents;
+
+  if (result == -1) {
+    SetLastError (_wapi_get_win32_file_error (errno));
+  }
+
+  return result;
+}
+
+/**
+ * GetPipeHandle:
+ * @fd: specifies the file descriptor of the pipe
+ * @flags: specifies GENERIC_READ / GENERIC_WRITE depending on pipe direction, will generate error if incorrect
+ *
+ * Returns a handle for (inherited / created external to wapi) pipe file descriptor. If 
+ * handle wasn't initialized with WAPI then initialize it. If it's been initialized in WAPI
+ * then it reuses the existing handle.
+ *
+ * Return value: the handle, or %INVALID_HANDLE_VALUE on error
+ */
+gpointer ves_icall_System_IO_MonoIO_GetPipeHandle(int fd, int flags, gint32 *error)
+{
+	struct _WapiHandle_file *file_handle;
+	int thr_ret;
+	gboolean ok;
+  gpointer handle;
+
+  *error = ERROR_SUCCESS;
+
+  // TODO: Remove, copied from GetStdHandle
+	handle = GINT_TO_POINTER (fd);
+
+  // Conciously reusing same mutex from GetStdHandle() for GetPipeHandle() 
+  // - is there really any benefit to making a new one?
+	pthread_cleanup_push ((void(*)(void *))mono_mutex_unlock_in_cleanup,
+			      (void *)&stdhandle_mutex);
+	thr_ret = mono_mutex_lock (&stdhandle_mutex);
+	g_assert (thr_ret == 0);
+
+	ok = _wapi_lookup_handle (handle, WAPI_HANDLE_PIPE,
+				  (gpointer *)&file_handle);
+	if (ok == FALSE) {
+		/* assume the pipe handle provided was setup somehow outside of mono,
+       and we try to initialize it in WAPI layer, let WAPI do checks
+       and generate error if the handle isn't what caller says it is */
+		handle = _wapi_pipehandle_initialize (fd, flags, error);
+	} else {
+		/* Add a reference to this handle */
+		_wapi_handle_ref (handle);
+	}
+	
 	thr_ret = mono_mutex_unlock (&stdhandle_mutex);
 	g_assert (thr_ret == 0);
 	pthread_cleanup_pop (0);

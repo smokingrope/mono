@@ -4,7 +4,7 @@ namespace System.IO.Pipes
 {
 	// Common interfaces
 
-	interface IPipe
+	interface IPipe : IDisposable
 	{
 		SafePipeHandle Handle { get; }
 		void WaitForPipeDrain ();
@@ -18,6 +18,7 @@ namespace System.IO.Pipes
 	{
 		SafePipeHandle ClientHandle { get; }
 		void DisposeLocalCopyOfClientHandle ();
+    string GetClientHandleAsString();
 	}
 
 	interface INamedPipeClient : IPipe

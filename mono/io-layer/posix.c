@@ -54,6 +54,91 @@ convert_from_flags(int flags)
 	return(fileaccess);
 }
 
+gpointer _wapi_pipehandle_initialize (int fd, int handleFlags, gint32 *error)
+{
+  const char name[] = "<PIPE>";
+	struct _WapiHandle_file file_handle = {0};
+	gpointer handle;
+	int flags;
+	
+  switch (handleFlags) {
+    case GENERIC_READ:
+    case GENERIC_WRITE:
+      break;
+    default:
+	    DEBUG("%s: invalid handle flags %d "
+            "only GENERIC_READ(%d) / GENERIC_WRITE(%d) allowed", 
+            __func__, handleFlags, GENERIC_READ, GENERIC_WRITE);
+      SetLastError (*error = ERROR_NOT_SUPPORTED);
+      return (INVALID_HANDLE_VALUE);
+  }
+
+	DEBUG("%s: creating pipe handle type %s, fd %d", __func__, name, fd);
+
+#if !defined(__native_client__)	
+	/* Check if fd is valid */
+	do {
+		flags=fcntl(fd, F_GETFL);
+	} while (flags == -1 && errno == EINTR);
+
+	if(flags==-1) {
+		/* Invalid fd.  Not really much point checking for EBADF
+		 * specifically
+		 */
+		DEBUG("%s: fcntl error on fd %d: %s", __func__, fd,
+			  strerror(errno));
+
+		SetLastError ( *error = _wapi_get_win32_file_error (errno));
+		return(INVALID_HANDLE_VALUE);
+	} 
+ 
+  flags = convert_from_flags(flags);
+
+  if (flags != handleFlags) {
+    DEBUG ("%s: fcntl flags %d didnt match expected %d for fd %d", __func__, flags, handleFlags, fd);
+   
+    SetLastError( *error = ERROR_INVALID_DATA);
+
+    // TODO: Remove this eventually
+    *error = flags;
+    return (INVALID_HANDLE_VALUE);
+  }
+
+	file_handle.fileaccess=convert_from_flags(flags);
+#else
+  /* TODO: No idea what this is used for, assume provided flags are valid? */
+	file_handle.fileaccess = convert_from_flags(handleFlags);
+#endif
+
+	file_handle.fd = fd;
+  /* TODO: no idea what implications of this field is, just copied from create_stdhandle */
+	file_handle.filename = g_strdup(name);
+	/* TODO: no idea what implications of this field is, just copied from create_stdhandle */
+	file_handle.security_attributes=0;
+
+	/* TODO: no idea what implications of this field is, just copied from create_stdhandle */
+	/* Apparently input handles can't be written to.  (I don't
+	 * know if output or error handles can't be read from.)
+	 */
+	if (fd == 0) {
+		file_handle.fileaccess &= ~GENERIC_WRITE;
+	}
+	
+	/* TODO: no idea what implications of this field is, just copied from create_stdhandle */
+	file_handle.sharemode=0;
+	file_handle.attrs=0;
+
+	handle = _wapi_handle_new_fd (WAPI_HANDLE_PIPE, fd, &file_handle);
+	if (handle == _WAPI_HANDLE_INVALID) {
+		g_warning ("%s: error creating file handle", __func__);
+		SetLastError ( *error = ERROR_GEN_FAILURE);
+		return(INVALID_HANDLE_VALUE);
+	}
+	
+	DEBUG("%s: returning handle %p", __func__, handle);
+
+	return(handle);
+}
 
 gpointer _wapi_stdhandle_create (int fd, const gchar *name)
 {

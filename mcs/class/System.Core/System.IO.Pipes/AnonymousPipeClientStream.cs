@@ -43,15 +43,7 @@ namespace System.IO.Pipes
 	[HostProtection (SecurityAction.LinkDemand, MayLeakOnAbort = true)]
 	public sealed class AnonymousPipeClientStream : PipeStream
 	{
-		static SafePipeHandle ToSafePipeHandle (string pipeHandleAsString)
-		{
-			if (pipeHandleAsString == null)
-				throw new ArgumentNullException ("pipeHandleAsString");
-			// We use int64 for safety
-			return new SafePipeHandle (new IntPtr (long.Parse (pipeHandleAsString, NumberFormatInfo.InvariantInfo)), false);
-		}
-
-		//IAnonymousPipeClient impl;
+		IAnonymousPipeClient impl;
 
 		public AnonymousPipeClientStream (string pipeHandleAsString)
 			: this (PipeDirection.In, pipeHandleAsString)
@@ -59,21 +51,27 @@ namespace System.IO.Pipes
 		}
 
 		public AnonymousPipeClientStream (PipeDirection direction, string pipeHandleAsString)
-			: this (direction, ToSafePipeHandle (pipeHandleAsString))
+			: base (direction, DefaultBufferSize)
 		{
+      Console.WriteLine("Initializing pipe client");
+			if (IsWindows)
+				impl = new Win32AnonymousPipeClient (this, pipeHandleAsString);
+			else
+				impl = new UnixAnonymousPipeClient (this, pipeHandleAsString);
+
+			InitializeHandle (impl.Handle, false, false);
+			IsConnected = true;
 		}
 
 		public AnonymousPipeClientStream (PipeDirection direction,SafePipeHandle safePipeHandle)
 			: base (direction, DefaultBufferSize)
 		{
-			/*
 			if (IsWindows)
 				impl = new Win32AnonymousPipeClient (this, safePipeHandle);
 			else
 				impl = new UnixAnonymousPipeClient (this, safePipeHandle);
-			*/
 
-			InitializeHandle (safePipeHandle, false, false);
+			InitializeHandle (impl.Handle, false, false);
 			IsConnected = true;
 		}
 

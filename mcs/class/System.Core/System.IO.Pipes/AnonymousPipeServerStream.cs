@@ -101,6 +101,10 @@ namespace System.IO.Pipes
 			ClientSafePipeHandle = clientSafePipeHandle;
 		}
 
+    internal override void WaitForPipeDrainInternal() {
+      impl.WaitForPipeDrain();
+    }
+
 		IAnonymousPipeServer impl;
 
 		[MonoTODO]
@@ -125,8 +129,10 @@ namespace System.IO.Pipes
 
 		public string GetClientHandleAsString ()
 		{
+      return impl.GetClientHandleAsString();
 			// We use int64 for safety.
-			return impl.Handle.DangerousGetHandle ().ToInt64 ().ToString (NumberFormatInfo.InvariantInfo);
+      // TODO: Delete this
+			//return impl.ClientHandle.DangerousGetHandle ().ToInt64 ().ToString (NumberFormatInfo.InvariantInfo);
 		}
 	}
 }

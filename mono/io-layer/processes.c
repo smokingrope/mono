@@ -989,14 +989,13 @@ gboolean CreateProcess (const gunichar2 *appname, const gunichar2 *cmdline,
 		dup2 (err_fd, 2);
 
 		if (inherit_handles != TRUE) {
-			/* FIXME: do something here */
+			/* FIXME: do something here - how about close the handles? */
+      /* Close all file descriptors */
+      //for (i = getdtablesize () - 1; i > 2; i--) {
+      //  close (i);
+      //}
 		}
 		
-		/* Close all file descriptors */
-		for (i = getdtablesize () - 1; i > 2; i--) {
-			close (i);
-		}
-
 #ifdef DEBUG_ENABLED
 		DEBUG ("%s: exec()ing [%s] in dir [%s]", __func__, cmd,
 			   dir==NULL?".":dir);
