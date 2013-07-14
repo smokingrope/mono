@@ -1048,6 +1048,8 @@ mono_gc_clear_domain (MonoDomain * domain)
 
 	LOCK_GC;
 
+	sgen_stop_world (0);
+
 	if (concurrent_collection_in_progress)
 		sgen_perform_collection (0, GENERATION_OLD, "clear domain", TRUE);
 	g_assert (!concurrent_collection_in_progress);
@@ -1111,6 +1113,8 @@ mono_gc_clear_domain (MonoDomain * domain)
 			sgen_pin_stats_print_class_stats ();
 		sgen_object_layout_dump (stdout);
 	}
+
+	sgen_restart_world (0, NULL);
 
 	UNLOCK_GC;
 }
@@ -4231,6 +4235,7 @@ mono_gc_pthread_detach (pthread_t thread)
 void
 mono_gc_pthread_exit (void *retval) 
 {
+	mono_thread_info_dettach ();
 	pthread_exit (retval);
 }
 

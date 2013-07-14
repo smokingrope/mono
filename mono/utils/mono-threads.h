@@ -13,9 +13,7 @@
 #include <mono/utils/mono-semaphore.h>
 #include <mono/utils/mono-stack-unwinding.h>
 #include <mono/utils/mono-linked-list-set.h>
-
-/* FIXME used for CRITICAL_SECTION replace with mono-mutex  */
-#include <mono/io-layer/io-layer.h>
+#include <mono/utils/mono-mutex.h>
 
 #include <glib.h>
 
@@ -98,8 +96,11 @@ typedef struct {
 	MonoNativeThreadHandle native_handle; /* Valid on mach and android */
 	int thread_state;
 
-	/* suspend machinery, fields protected by the suspend_lock */
-	CRITICAL_SECTION suspend_lock;
+	/*Tells if this thread was created by the runtime or not.*/
+	gboolean runtime_thread;
+
+	/* suspend machinery, fields protected by suspend_semaphore */
+	MonoSemType suspend_semaphore;
 	int suspend_count;
 
 	MonoSemType finish_resume_semaphore;
@@ -107,7 +108,7 @@ typedef struct {
 
 	/* only needed by the posix backend */ 
 #if (defined(_POSIX_VERSION) || defined(__native_client__)) && !defined (__MACH__)
-	MonoSemType suspend_semaphore;
+	MonoSemType begin_suspend_semaphore;
 	gboolean syscall_break_signal;
 	gboolean suspend_can_continue;
 #endif
@@ -118,6 +119,13 @@ typedef struct {
 	/*async call machinery, thread MUST be suspended before accessing those fields*/
 	void (*async_target)(void*);
 	void *user_data;
+
+	/*
+	If true, this thread is running a critical region of code and cannot be suspended.
+	A critical session is implicitly started when you call mono_thread_info_safe_suspend_sync
+	and is ended when you call either mono_thread_info_resume or mono_thread_info_finish_suspend.
+	*/
+	gboolean inside_critical_region;
 } MonoThreadInfo;
 
 typedef struct {
@@ -197,6 +205,9 @@ mono_thread_info_safe_suspend_sync (MonoNativeThreadId tid, gboolean interrupt_k
 
 gboolean
 mono_thread_info_resume (MonoNativeThreadId tid) MONO_INTERNAL;
+
+void
+mono_thread_info_finish_suspend (void) MONO_INTERNAL;
 
 void
 mono_thread_info_self_suspend (void) MONO_INTERNAL;

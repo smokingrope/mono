@@ -1,14 +1,14 @@
 //
-// attribute.cs: Attribute Handler
+// attribute.cs: Attributes handling
 //
 // Author: Ravi Pratap (ravi@ximian.com)
-//         Marek Safar (marek.safar@seznam.cz)
+//         Marek Safar (marek.safar@gmail.com)
 //
 // Dual licensed under the terms of the MIT X11 or GNU GPL
 //
 // Copyright 2001-2003 Ximian, Inc (http://www.ximian.com)
 // Copyright 2003-2008 Novell, Inc.
-// Copyright 2011 Xamarin Inc
+// Copyright 2011-2013 Xamarin Inc
 //
 
 using System;
@@ -383,6 +383,19 @@ namespace Mono.CSharp {
 		public bool IsValidSecurityAttribute ()
 		{
 			return HasSecurityAttribute && IsSecurityActionValid ();
+		}
+
+		static bool IsValidMethodImplOption (int value)
+		{
+			//
+			// Allow to use AggressiveInlining on any runtime/corlib
+			//
+			MethodImplOptions all = (MethodImplOptions) 256;
+			foreach (MethodImplOptions v in System.Enum.GetValues (typeof (MethodImplOptions))) {
+				all |= v;
+			}
+
+			return ((MethodImplOptions) value | all) == all;
 		}
 
 		static bool IsValidArgumentType (TypeSpec t)
@@ -1025,10 +1038,14 @@ namespace Mono.CSharp {
 									if (string.IsNullOrEmpty (value))
 										Error_AttributeEmitError ("DllName cannot be empty or null");
 								}
-							} else if (Type == predefined.MethodImpl && pt.BuiltinType == BuiltinTypeSpec.Type.Short &&
-								!System.Enum.IsDefined (typeof (MethodImplOptions), ((Constant) arg_expr).GetValue ().ToString ())) {
-								Error_AttributeEmitError ("Incorrect argument value.");
-								return;
+							} else if (Type == predefined.MethodImpl) {
+								if (pos_args.Count == 1) {
+									var value = (int) ((Constant) arg_expr).GetValueAsLong ();
+
+									if (!IsValidMethodImplOption (value)) {
+										Error_AttributeEmitError ("Incorrect argument value");
+									}
+								}
 							}
 						}
 
@@ -1650,6 +1667,11 @@ namespace Mono.CSharp {
 		public readonly PredefinedDecimalAttribute DecimalConstant;
 		public readonly PredefinedAttribute StructLayout;
 		public readonly PredefinedAttribute FieldOffset;
+		public readonly PredefinedAttribute AssemblyProduct;
+		public readonly PredefinedAttribute AssemblyCompany;
+		public readonly PredefinedAttribute AssemblyDescription;
+		public readonly PredefinedAttribute AssemblyCopyright;
+		public readonly PredefinedAttribute AssemblyTrademark;
 		public readonly PredefinedAttribute CallerMemberNameAttribute;
 		public readonly PredefinedAttribute CallerLineNumberAttribute;
 		public readonly PredefinedAttribute CallerFilePathAttribute;
@@ -1703,6 +1725,11 @@ namespace Mono.CSharp {
 			DecimalConstant = new PredefinedDecimalAttribute (module, "System.Runtime.CompilerServices", "DecimalConstantAttribute");
 			StructLayout = new PredefinedAttribute (module, "System.Runtime.InteropServices", "StructLayoutAttribute");
 			FieldOffset = new PredefinedAttribute (module, "System.Runtime.InteropServices", "FieldOffsetAttribute");
+			AssemblyProduct = new PredefinedAttribute (module, "System.Reflection", "AssemblyProductAttribute");
+			AssemblyCompany = new PredefinedAttribute (module, "System.Reflection", "AssemblyCompanyAttribute");
+			AssemblyDescription = new PredefinedAttribute (module, "System.Reflection", "AssemblyDescriptionAttribute");
+			AssemblyCopyright = new PredefinedAttribute (module, "System.Reflection", "AssemblyCopyrightAttribute");
+			AssemblyTrademark = new PredefinedAttribute (module, "System.Reflection", "AssemblyTrademarkAttribute");
 
 			AsyncStateMachine = new PredefinedStateMachineAttribute (module, "System.Runtime.CompilerServices", "AsyncStateMachineAttribute");
 
@@ -1820,7 +1847,7 @@ namespace Mono.CSharp {
 			//
 			// Handle all parameter-less attributes as optional
 			//
-			if (!IsDefined)
+			if (!Define ())
 				return false;
 
 			ctor = (MethodSpec) MemberCache.FindMember (type, MemberFilter.Constructor (ParametersCompiled.EmptyReadOnlyParameters), BindingRestriction.DeclaredOnly);
@@ -1978,7 +2005,7 @@ namespace Mono.CSharp {
 			if (ac != null) {
 				element = GetTransformationFlags (ac.Element);
 				if (element == null)
-					return null;
+					return new bool[] { false, false };
 
 				bool[] res = new bool[element.Length + 1];
 				res[0] = false;

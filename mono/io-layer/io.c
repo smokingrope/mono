@@ -2078,7 +2078,7 @@ replace_cleanup:
  * Return value: the handle, or %INVALID_HANDLE_VALUE on error
  */
 
-static mono_mutex_t stdhandle_mutex = MONO_MUTEX_INITIALIZER;
+static mono_mutex_t stdhandle_mutex;
 
 gpointer GetStdHandle(WapiStdHandle stdhandle)
 {
@@ -4333,3 +4333,10 @@ GetVolumeInformation (const gunichar2 *path, gunichar2 *volumename, int volumesi
 	return status;
 }
 #endif
+
+
+void
+_wapi_io_init (void)
+{
+	mono_mutex_init (&stdhandle_mutex);
+}

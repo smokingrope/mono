@@ -404,13 +404,6 @@ namespace System.IO
 				return(buf_start + buf_offset);
 			}
 			set {
-				if (handle == MonoIO.InvalidHandle)
-					throw new ObjectDisposedException ("Stream has been closed");
-
-				if(CanSeek == false) {
-					throw new NotSupportedException("The stream does not support seeking");
-				}
-
 				if(value < 0) {
 					throw new ArgumentOutOfRangeException("Attempt to set the position to a negative value");
 				}
@@ -706,11 +699,14 @@ namespace System.IO
 				MemoryStream ms = new MemoryStream ();
 				FlushBuffer (ms);
 				ms.Write (array, offset, numBytes);
+
+				// Set arguments to new compounded buffer 
 				offset = 0;
-				numBytes = (int) ms.Length;
+				array = ms.ToArray ();
+				numBytes = array.Length;
 			}
 
-			WriteDelegate w = new WriteDelegate (WriteInternal);
+			WriteDelegate w = WriteInternal;
 			return w.BeginInvoke (array, offset, numBytes, userCallback, stateObject);			
 		}
 		

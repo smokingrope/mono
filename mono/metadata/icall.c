@@ -898,18 +898,6 @@ ves_icall_System_Runtime_CompilerServices_RuntimeHelpers_InitializeArray (MonoAr
 	}
 #else
 	memcpy (mono_array_addr (array, char, 0), field_data, size);
-#ifdef ARM_FPU_FPA
-	if (klass->element_class->byval_arg.type == MONO_TYPE_R8) {
-		gint i;
-		double tmp;
-		double *data = (double*)mono_array_addr (array, double, 0);
-
-		for (i = 0; i < size; i++, data++) {
-			readr8 (data, &tmp);
-			*data = tmp;
-		}
-	}
-#endif
 #endif
 }
 
@@ -6537,10 +6525,8 @@ ves_icall_System_Environment_Exit (int result)
  * NaCl exits anyway.
  */
 #ifndef __native_client__
-	mono_runtime_shutdown ();
-
-	/* This will kill the tp threads which cannot be suspended */
-	mono_thread_pool_cleanup ();
+	if (!mono_runtime_try_shutdown ())
+		mono_thread_exit ();
 
 	/* Suspend all managed threads since the runtime is going away */
 	mono_thread_suspend_all_other_threads ();
@@ -6839,6 +6825,15 @@ ves_icall_System_Runtime_Activation_ActivationServices_EnableProxyActivation (Mo
 
 	mono_vtable_set_is_remote (vtable, enable);
 }
+
+#else /* DISABLE_REMOTING */
+
+ICALL_EXPORT void
+ves_icall_System_Runtime_Activation_ActivationServices_EnableProxyActivation (MonoReflectionType *type, MonoBoolean enable)
+{
+	g_assert_not_reached ();
+}
+
 #endif
 
 ICALL_EXPORT MonoObject *

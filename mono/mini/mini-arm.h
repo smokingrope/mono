@@ -15,8 +15,8 @@
 #define kNaClLengthOfCallImm 4
 #endif
 
-#if defined(ARM_FPU_NONE) || (defined(__ARM_EABI__) && !defined(ARM_FPU_VFP) && !defined(ARM_FPU_VFP_HARD))
-#define MONO_ARCH_SOFT_FLOAT 1
+#if defined(ARM_FPU_NONE)
+#define MONO_ARCH_SOFT_FLOAT_FALLBACK 1
 #endif
 
 #ifdef ARM_FPU_VFP_HARD
@@ -33,16 +33,14 @@
 #define ARM_ARCHITECTURE "arm"
 #endif
 
-#if defined(ARM_FPU_FPA)
-#define ARM_FP_MODEL "fpa"
-#elif defined(ARM_FPU_VFP)
+#if defined(ARM_FPU_VFP)
 #define ARM_FP_MODEL "vfp"
 #elif defined(ARM_FPU_NONE)
-#define ARM_FP_MODEL "soft-float"
+#define ARM_FP_MODEL "vfp+fallback"
 #elif defined(ARM_FPU_VFP_HARD)
-#define ARM_FP_MODEL "vfp(hardfp-abi)"
+#define ARM_FP_MODEL "vfp+hard"
 #else
-#error "At least one of ARM_FPU_NONE, ARM_FPU_FPA, ARM_FPU_VFP or ARM_FPU_VFP_HARD must be defined."
+#error "At least one of ARM_FPU_NONE, ARM_FPU_VFP or ARM_FPU_VFP_HARD must be defined."
 #endif
 
 #define MONO_ARCH_ARCHITECTURE ARM_ARCHITECTURE "," ARM_FP_MODEL
@@ -73,12 +71,8 @@
 #define MONO_ARCH_CALLEE_REGS ((1<<ARMREG_R0) | (1<<ARMREG_R1) | (1<<ARMREG_R2) | (1<<ARMREG_R3) | (1<<ARMREG_IP))
 #define MONO_ARCH_CALLEE_SAVED_REGS ((1<<ARMREG_V1) | (1<<ARMREG_V2) | (1<<ARMREG_V3) | (1<<ARMREG_V4) | (1<<ARMREG_V5) | (1<<ARMREG_V6) | (1<<ARMREG_V7))
 
-#if defined(ARM_FPU_VFP) || defined(ARM_FPU_VFP_HARD)
 /* Every double precision vfp register, d0/d1 is reserved for a scratch reg */
 #define MONO_ARCH_CALLEE_FREGS 0x55555550
-#else
-#define MONO_ARCH_CALLEE_FREGS 0xf
-#endif
 #define MONO_ARCH_CALLEE_SAVED_FREGS 0
 
 #define MONO_ARCH_USE_FPSTACK FALSE
@@ -86,16 +80,22 @@
 
 #define MONO_ARCH_INST_SREG2_MASK(ins) (0)
 
-#ifdef MONO_ARCH_SOFT_FLOAT
-#define MONO_ARCH_INST_FIXED_REG(desc) (((desc) == 'l' || (desc == 'f') || (desc == 'g')) ? ARM_LSW_REG: (((desc) == 'a') ? ARMREG_R0 : -1))
-#define MONO_ARCH_INST_IS_REGPAIR(desc) ((desc) == 'l' || (desc) == 'L' || (desc) == 'f' || (desc) == 'g')
-#define MONO_ARCH_INST_IS_FLOAT(desc) (FALSE)
-#else
-#define MONO_ARCH_INST_FIXED_REG(desc) (((desc) == 'l')? ARM_LSW_REG: (((desc) == 'a') ? ARMREG_R0 : -1))
-#define MONO_ARCH_INST_IS_REGPAIR(desc) (desc == 'l' || desc == 'L')
-#define MONO_ARCH_INST_IS_FLOAT(desc) ((desc == 'f') || (desc == 'g'))
-#endif
-#define MONO_ARCH_INST_REGPAIR_REG2(desc,hreg1) (desc == 'l'  || (desc == 'f') || (desc == 'g')? ARM_MSW_REG : -1)
+#define MONO_ARCH_INST_FIXED_REG(desc) \
+	(mono_arch_is_soft_float () ? \
+	((desc) == 'l' || (desc) == 'f' || (desc) == 'g' ? ARM_LSW_REG : (desc) == 'a' ? ARMREG_R0 : -1) : \
+	((desc) == 'l' ? ARM_LSW_REG : (desc) == 'a' ? ARMREG_R0 : -1))
+
+#define MONO_ARCH_INST_IS_REGPAIR(desc) \
+	(mono_arch_is_soft_float () ? \
+	((desc) == 'l' || (desc) == 'L' || (desc) == 'f' || (desc) == 'g') : \
+	((desc) == 'l' || (desc) == 'L'))
+
+#define MONO_ARCH_INST_IS_FLOAT(desc) \
+	(mono_arch_is_soft_float () ? \
+	(FALSE) : \
+	((desc) == 'f' || (desc) == 'g'))
+
+#define MONO_ARCH_INST_REGPAIR_REG2(desc,hreg1) ((desc) == 'l' || (desc) == 'f' || (desc) == 'g' ? ARM_MSW_REG : -1)
 
 #define MONO_ARCH_FRAME_ALIGNMENT 8
 
@@ -103,15 +103,15 @@
  * reproduceable results for benchmarks */
 #define MONO_ARCH_CODE_ALIGNMENT 32
 
-
 /* Return value marshalling for calls between gsharedvt and normal code */
 typedef enum {
 	GSHAREDVT_RET_NONE = 0,
-	GSHAREDVT_RET_IREGS = 1,
-	GSHAREDVT_RET_I1 = 5,
-	GSHAREDVT_RET_U1 = 6,
-	GSHAREDVT_RET_I2 = 7,
-	GSHAREDVT_RET_U2 = 8
+	GSHAREDVT_RET_IREG = 1,
+	GSHAREDVT_RET_IREGS = 2,
+	GSHAREDVT_RET_I1 = 3,
+	GSHAREDVT_RET_U1 = 4,
+	GSHAREDVT_RET_I2 = 5,
+	GSHAREDVT_RET_U2 = 6
 } GSharedVtRetMarshal;
 
 typedef struct {
@@ -143,13 +143,12 @@ void
 mono_arm_throw_exception_by_token (guint32 type_token, mgreg_t pc, mgreg_t sp, mgreg_t *int_regs, gdouble *fp_regs);
 
 gpointer
-mono_arm_start_gsharedvt_call (GSharedVtCallInfo *info, gpointer *caller, gpointer *callee, gpointer *caller_regs, gpointer *callee_regs, gpointer mrgctx_reg) MONO_INTERNAL;
+mono_arm_start_gsharedvt_call (GSharedVtCallInfo *info, gpointer *caller, gpointer *callee, gpointer mrgctx_reg) MONO_INTERNAL;
 
 typedef enum {
 	MONO_ARM_FPU_NONE = 0,
-	MONO_ARM_FPU_FPA = 1,
-	MONO_ARM_FPU_VFP = 2,
-	MONO_ARM_FPU_VFP_HARD = 3
+	MONO_ARM_FPU_VFP = 1,
+	MONO_ARM_FPU_VFP_HARD = 2
 } MonoArmFPU;
 
 /* keep the size of the structure a multiple of 8 */
@@ -231,6 +230,7 @@ typedef struct MonoCompileArch {
 #define MONO_ARCH_HAVE_SETUP_RESUME_FROM_SIGNAL_HANDLER_CTX 1
 #define MONO_ARCH_GSHAREDVT_SUPPORTED 1
 #define MONO_ARCH_HAVE_GENERAL_RGCTX_LAZY_FETCH_TRAMPOLINE 1
+#define MONO_ARCH_HAVE_OPCODE_NEEDS_EMULATION 1
 
 #if defined(__native_client__)
 #undef MONO_ARCH_SOFT_DEBUG_SUPPORTED
