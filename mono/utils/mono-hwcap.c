@@ -1,5 +1,5 @@
 /*
- * mono-hwcap-empty.c: Dummy file with no feature detection
+ * mono-hwcap.c: Hardware feature detection
  *
  * Authors:
  *    Alex Rønne Petersen (alexrp@xamarin.com)
@@ -18,16 +18,22 @@
  * Copyright 2011-2013 Xamarin Inc
  */
 
+#include <stdlib.h>
+
 #include "mono/utils/mono-hwcap.h"
+
+static gboolean hwcap_inited = FALSE;
 
 void
 mono_hwcap_init (void)
 {
-	/* When the runtime is built as a cross compiler, we don't want to do
-	 * any CPU feature detection since we're most likely not running on the
-	 * same kind of CPU as the one the resulting code will run on.
-	 *
-	 * This file is also used for architectures that haven't specified a
-	 * mono-hwcap-$TARGET.c file in Makefile.am.
-	 */
+	const char *verbose = g_getenv ("MONO_VERBOSE_HWCAP");
+
+	if (hwcap_inited)
+		return;
+
+	mono_hwcap_arch_init ();
+
+	if (verbose)
+		mono_hwcap_print (stdout);
 }

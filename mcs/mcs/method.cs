@@ -493,29 +493,29 @@ namespace Mono.CSharp {
 			return ms;
 		}
 
-		public override List<TypeSpec> ResolveMissingDependencies ()
+		public override List<MissingTypeSpecReference> ResolveMissingDependencies (MemberSpec caller)
 		{
-			var missing = returnType.ResolveMissingDependencies ();
+			var missing = returnType.ResolveMissingDependencies (this);
 			foreach (var pt in parameters.Types) {
-				var m = pt.GetMissingDependencies ();
+				var m = pt.GetMissingDependencies (this);
 				if (m == null)
 					continue;
 
 				if (missing == null)
-					missing = new List<TypeSpec> ();
+					missing = new List<MissingTypeSpecReference> ();
 
 				missing.AddRange (m);
 			}
 
 			if (Arity > 0) {
 				foreach (var tp in GenericDefinition.TypeParameters) {
-					var m = tp.GetMissingDependencies ();
+					var m = tp.GetMissingDependencies (this);
 
 					if (m == null)
 						continue;
 
 					if (missing == null)
-						missing = new List<TypeSpec> ();
+						missing = new List<MissingTypeSpecReference> ();
 
 					missing.AddRange (m);
 				}
@@ -2124,13 +2124,11 @@ namespace Mono.CSharp {
 		{
 			DefineOverride (parent);
 
-			var mc = (IMemberContext) method;
-
-			method.ParameterInfo.ApplyAttributes (mc, MethodBuilder);
+			method.ParameterInfo.ApplyAttributes (method, MethodBuilder);
 
 			ToplevelBlock block = method.Block;
 			if (block != null) {
-				BlockContext bc = new BlockContext (mc, block, method.ReturnType);
+				BlockContext bc = new BlockContext (method, block, method.ReturnType);
 				if (block.Resolve (null, bc, method)) {
 					debug_builder = member.Parent.CreateMethodSymbolEntry ();
 					EmitContext ec = method.CreateEmitContext (MethodBuilder.GetILGenerator (), debug_builder);

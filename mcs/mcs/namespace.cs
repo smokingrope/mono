@@ -211,13 +211,13 @@ namespace Mono.CSharp {
 
 			retval = LookupType (ctx, name, -System.Math.Max (1, arity), LookupMode.Probing, loc);
 			if (retval != null) {
-				Error_TypeArgumentsCannotBeUsed (ctx, retval.Type, arity, loc);
+				Error_TypeArgumentsCannotBeUsed (ctx, retval.Type, loc);
 				return;
 			}
 
 			Namespace ns;
 			if (arity > 0 && namespaces.TryGetValue (name, out ns)) {
-				ns.Error_TypeArgumentsCannotBeUsed (ctx, null, arity, loc);
+				ns.Error_TypeArgumentsCannotBeUsed (ctx, null, loc);
 				return;
 			}
 
@@ -471,7 +471,7 @@ namespace Mono.CSharp {
 					continue;
 				}
 
-				var res = ts.MemberCache.FindExtensionMethods (invocationContext, extensionType, name, arity);
+				var res = ts.MemberCache.FindExtensionMethods (invocationContext, name, arity);
 				if (res == null)
 					continue;
 
@@ -892,7 +892,7 @@ namespace Mono.CSharp {
 			MemberCore mc;
 			if (names_container.DefinedNames.TryGetValue (name, out mc)) {
 				if (tc is NamespaceContainer && mc is NamespaceContainer) {
-					containers.Add (tc);
+					AddTypeContainerMember (tc);
 					return;
 				}
 
@@ -1140,7 +1140,7 @@ namespace Mono.CSharp {
 			if (aliases != null && arity == 0) {
 				UsingAliasNamespace uan;
 				if (aliases.TryGetValue (name, out uan)) {
-					if (fne != null) {
+					if (fne != null && mode != LookupMode.Probing) {
 						// TODO: Namespace has broken location
 						//Report.SymbolRelatedToPreviousError (fne.Location, null);
 						Compiler.Report.SymbolRelatedToPreviousError (uan.Location, null);

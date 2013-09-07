@@ -108,10 +108,11 @@ public abstract class Decoder
 		CheckArguments (chars, charCount, bytes, byteCount);
 
 		char [] carr = new char [charCount];
-		Marshal.Copy ((IntPtr) chars, carr, 0, charCount);
 		byte [] barr = new byte [byteCount];
 		Marshal.Copy ((IntPtr) bytes, barr, 0, byteCount);
-		return GetChars (barr, 0, byteCount, carr, 0, flush);
+		int charsUsed = GetChars (barr, 0, byteCount, carr, 0, flush);
+		Marshal.Copy (carr, 0, (IntPtr) chars, charsUsed);
+		return charsUsed;
 	}
 
 	[ComVisible (false)]
@@ -143,26 +144,29 @@ public abstract class Decoder
 	}
 
 	[ComVisible (false)]
-	public unsafe virtual void Convert (
+	public virtual void Convert (
 		byte [] bytes, int byteIndex, int byteCount,
 		char [] chars, int charIndex, int charCount, bool flush,
 		out int bytesUsed, out int charsUsed, out bool completed)
 	{
 		CheckArguments (bytes, byteIndex, byteCount);
-		CheckArguments (chars, charIndex);
+		if (chars == null)
+			throw new ArgumentNullException ("chars");
+		if (charIndex < 0)
+			throw new ArgumentOutOfRangeException ("charIndex");
 		if (charCount < 0 || chars.Length < charIndex + charCount)
 			throw new ArgumentOutOfRangeException ("charCount");
 
-		// refactorize passing control to byte* version
-		fixed (char* cptr = chars) {
-			fixed (byte* bptr = bytes) {
-				Convert(bptr + byteIndex, byteCount,
-					cptr + charIndex, charCount,
-					flush,
-					out bytesUsed, out charsUsed,
-					out completed);
-			}
+		bytesUsed = byteCount;
+		while (true) {
+			charsUsed = GetCharCount (bytes, byteIndex, bytesUsed, flush);
+			if (charsUsed <= charCount)
+				break;
+			flush = false;
+			bytesUsed >>= 1;
 		}
+		completed = bytesUsed == byteCount;
+		charsUsed = GetChars (bytes, byteIndex, bytesUsed, chars, charIndex, flush);
 	}
 
 	void CheckArguments (char [] chars, int charIndex)

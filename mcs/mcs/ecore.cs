@@ -315,7 +315,7 @@ namespace Mono.CSharp {
 			}
 		}
 
-		public void Error_TypeArgumentsCannotBeUsed (IMemberContext context, MemberSpec member, int arity, Location loc)
+		public void Error_TypeArgumentsCannotBeUsed (IMemberContext context, MemberSpec member, Location loc)
 		{
 			// Better message for possible generic expressions
 			if (member != null && (member.Kind & MemberKind.GenericMask) != 0) {
@@ -461,7 +461,8 @@ namespace Mono.CSharp {
 
 				return e;
 			} catch (Exception ex) {
-				if (loc.IsNull || ec.Module.Compiler.Settings.DebugFlags > 0 || ex is CompletionResult || ec.Report.IsDisabled || ex is FatalException)
+				if (loc.IsNull || ec.Module.Compiler.Settings.DebugFlags > 0 || ex is CompletionResult || ec.Report.IsDisabled || ex is FatalException ||
+					ec.Report.Printer is NullReportPrinter)
 					throw;
 
 				ec.Report.Error (584, loc, "Internal compiler error: {0}", ex.Message);
@@ -525,8 +526,8 @@ namespace Mono.CSharp {
 
 			Constant c = expr as Constant;
 			if (c == null) {
-				if (c.type != InternalType.ErrorType)
-					rc.Report.Error (150, StartLocation, "A constant value is expected");
+				if (expr.type != InternalType.ErrorType)
+					rc.Report.Error (150, expr.StartLocation, "A constant value is expected");
 
 				return null;
 			}
@@ -2494,7 +2495,7 @@ namespace Mono.CSharp {
 
 			retval = ctx.LookupNamespaceOrType (Name, -System.Math.Max (1, Arity), LookupMode.Probing, loc);
 			if (retval != null) {
-				Error_TypeArgumentsCannotBeUsed (ctx, retval.Type, Arity, loc);
+				Error_TypeArgumentsCannotBeUsed (ctx, retval.Type, loc);
 				return;
 			}
 
@@ -2731,7 +2732,7 @@ namespace Mono.CSharp {
 						e = rc.LookupNamespaceOrType (Name, -System.Math.Max (1, Arity), LookupMode.Probing, loc);
 						if (e != null) {
 							if (e.Type.Arity != Arity) {
-								Error_TypeArgumentsCannotBeUsed (rc, e.Type, Arity, loc);
+								Error_TypeArgumentsCannotBeUsed (rc, e.Type, loc);
 								return e;
 							}
 
@@ -3520,6 +3521,13 @@ namespace Mono.CSharp {
 			}
 		}
 
+		public override bool IsSideEffectFree {
+			get {
+				return InstanceExpression != null ?
+					InstanceExpression.IsSideEffectFree : true;
+			}
+		}
+
 		public override bool IsStatic {
 			get {
 				if (best_candidate != null)
@@ -3574,7 +3582,7 @@ namespace Mono.CSharp {
 				return null;
 			}
 
-			if (best_candidate.IsConditionallyExcluded (ec, loc))
+			if (best_candidate.IsConditionallyExcluded (ec))
 				ec.Report.Error (765, loc,
 					"Partial methods with only a defining declaration or removed conditional methods cannot be used in an expression tree");
 			
@@ -3746,7 +3754,6 @@ namespace Mono.CSharp {
 			if (InstanceExpression == null || InstanceExpression.eclass == ExprClass.Type)
 				return null;
 
-			InstanceExpression = InstanceExpression.Resolve (rc);
 			if (!IsExtensionMethodArgument (InstanceExpression))
 				return null;
 
@@ -4462,6 +4469,11 @@ namespace Mono.CSharp {
 							if (!arg_moved) {
 								arguments = arguments.MarkOrderedArgument (na);
 								arg_moved = true;
+							}
+
+							if (arguments == orig_args) {
+								arguments = new Arguments (orig_args.Count);
+								arguments.AddRange (orig_args);
 							}
 
 							arguments[index] = arguments[i];
@@ -5185,7 +5197,7 @@ namespace Mono.CSharp {
 
 			if (ta_count != best_candidate.Arity && (ta_count > 0 || ((IParametersMember) best_candidate).Parameters.IsEmpty)) {
 				var mg = new MethodGroupExpr (new [] { best_candidate }, best_candidate.DeclaringType, loc);
-				mg.Error_TypeArgumentsCannotBeUsed (rc, best_candidate, ta_count, loc);
+				mg.Error_TypeArgumentsCannotBeUsed (rc, best_candidate, loc);
 				return;
 			}
 
@@ -5334,7 +5346,7 @@ namespace Mono.CSharp {
 					return false;
 				}
 
-				Expression conv = null;
+				Expression conv;
 				if (a.ArgType == Argument.AType.ExtensionType) {
 					if (a.Expr.Type == pt || TypeSpecComparer.IsEqual (a.Expr.Type, pt)) {
 						conv = a.Expr;
@@ -5359,6 +5371,7 @@ namespace Mono.CSharp {
 					params_initializers.Add (a.Expr);
 					args.RemoveAt (a_idx--);
 					--arg_count;
+					a.Expr = conv;
 					continue;
 				}
 
@@ -6206,7 +6219,7 @@ namespace Mono.CSharp {
 					}
 				}
 			} else {
-				args = arguments == null ? new Arguments (1) : arguments;
+				args = arguments ?? new Arguments (1);
 
 				if (leave_copy) {
 					source.Emit (ec);

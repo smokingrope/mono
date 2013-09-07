@@ -814,10 +814,12 @@ mono_thread_create (MonoDomain *domain, gpointer func, gpointer arg)
 static __inline__ __attribute__((always_inline))
 /* This is not defined by gcc */
 unsigned long long
-__readfsdword (unsigned long long offset)
+__readfsdword (unsigned long offset)
 {
-	unsigned long long value;
-	__asm__("movl %%fs:%a[offset], %k[value]" : [value] "=q" (value) : [offset] "irm" (offset));
+	unsigned long value;
+	//	__asm__("movl %%fs:%a[offset], %k[value]" : [value] "=q" (value) : [offset] "irm" (offset));
+   __asm__ volatile ("movl    %%fs:%1,%0"
+     : "=r" (value) ,"=m" ((*(volatile long *) offset)));
 	return value;
 }
 #endif
@@ -1992,19 +1994,18 @@ ves_icall_System_Threading_Interlocked_CompareExchange_Double (gdouble *location
 gint64 
 ves_icall_System_Threading_Interlocked_CompareExchange_Long (gint64 *location, gint64 value, gint64 comparand)
 {
-#if SIZEOF_VOID_P == 8
-	return (gint64)InterlockedCompareExchangePointer((gpointer *) location, (gpointer)value, (gpointer)comparand);
-#else
-	gint64 old;
-
-	mono_interlocked_lock ();
-	old = *location;
-	if (old == comparand)
-		*location = value;
-	mono_interlocked_unlock ();
-	
-	return old;
+#if SIZEOF_VOID_P == 4
+	if ((size_t)location & 0x7) {
+		gint64 old;
+		mono_interlocked_lock ();
+		old = *location;
+		if (old == comparand)
+			*location = value;
+		mono_interlocked_unlock ();
+		return old;
+	}
 #endif
+	return InterlockedCompareExchange64 (location, value, comparand);
 }
 
 MonoObject*
@@ -2529,7 +2530,11 @@ ves_icall_System_Threading_Thread_VolatileRead4 (void *ptr)
 gint64
 ves_icall_System_Threading_Thread_VolatileRead8 (void *ptr)
 {
+#if SIZEOF_VOID_P == 8
 	return *((volatile gint64 *) (ptr));
+#else
+	return InterlockedCompareExchange64 (ptr, 0, 0); /*Must ensure atomicity of the operation. */
+#endif
 }
 
 void *
@@ -3720,12 +3725,22 @@ mono_free_static_data (gpointer* static_data, gboolean threadlocal)
 {
 	int i;
 	for (i = 1; i < NUM_STATIC_DATA_IDX; ++i) {
-		if (!static_data [i])
+		gpointer p = static_data [i];
+		if (!p)
 			continue;
+		/*
+		 * At this point, the static data pointer array is still registered with the
+		 * GC, so must ensure that mark_tls_slots() will not encounter any invalid
+		 * data.  Freeing the individual arrays without first nulling their slots
+		 * would make it possible for mark_tls_slots() to encounter a pointer to
+		 * such an already freed array.  See bug #13813.
+		 */
+		static_data [i] = NULL;
+		mono_memory_write_barrier ();
 		if (mono_gc_user_markers_supported () && threadlocal)
-			g_free (static_data [i]);
+			g_free (p);
 		else
-			mono_gc_free_fixed (static_data [i]);
+			mono_gc_free_fixed (p);
 	}
 	mono_gc_free_fixed (static_data);
 }
