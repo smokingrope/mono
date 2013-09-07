@@ -156,7 +156,7 @@ namespace System.IO.Pipes
 				if (stream == null)
 					stream = new FileStream (handle.DangerousGetHandle (),
 								 CanRead ? (CanWrite ? FileAccess.ReadWrite : FileAccess.Read)
-								 	 : FileAccess.Write, true, buffer_size, IsAsync);
+								 	 : FileAccess.Write, false, buffer_size, IsAsync);
 				return stream;
 			}
 			set { stream = value; }
