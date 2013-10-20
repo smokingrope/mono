@@ -2,6 +2,9 @@ using System;
 using System.Threading;
 using System.IO;
 using System.Diagnostics;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
 namespace MonoTests.System.IO.Pipes
 {
@@ -11,7 +14,6 @@ namespace MonoTests.System.IO.Pipes
     protected readonly TestLogger _log;
     private bool _executionError = false;
     private string[] _executionArgs = null;
-    private StreamWriter _outFile = null;
 
     /// <summary>
     /// Instantiate pipe wrapper with timeout duration of 1 minute (the default)
@@ -52,30 +54,30 @@ namespace MonoTests.System.IO.Pipes
       public void Info(string msg) {
         WriteInfo(msg);
       }
-        
       public void Info(string msg, params object[] format) {
         Info(string.Format(msg, format));
+      }
+      public void Test(string msg) {
+        WriteTest(msg);
+      }
+      public void Test(string msg, params object[] format) {
+        Test(string.Format(msg, format));
       }
 
       private const string INDENT = "    ";
       private string GetHeader(string type)
       {
-        return string.Format("{2}[{0}]:{1}:", _parent.TestName, DateTime.Now, type);
+        return string.Format("[{1}][{0}]", _parent.TestName, type);
       }
       private string Format(string msg) {
         return msg.Replace(Environment.NewLine, Environment.NewLine + INDENT);
       }
       private void Write(string msg) {
         Console.WriteLine(msg);
-
-        if (_parent._outFile != null) {
-          _parent._outFile.WriteLine(msg);
-        }
       }
       private void WriteError(Exception exc, string msg)
       {
         lock (this) {
-          //Console.ForegroundColor = ConsoleColor.Red;
           bool indent = false;
           if (msg != null) {
             Write(GetHeader("ERROR") + Format(msg));
@@ -90,15 +92,18 @@ namespace MonoTests.System.IO.Pipes
             }
             Write(excMsg);
           }
-          //Console.ResetColor();
         }
       }
       private void WriteInfo(string msg)
       {
         lock (this) {
-          //Console.ForegroundColor = ConsoleColor.White;
           Write(GetHeader("INFO") + Format(msg));
-          //Console.ResetColor();
+        }
+      }
+      private void WriteTest(string msg)
+      {
+        lock (this) {
+          Write(GetHeader("TEST") + Format(msg));
         }
       }
     }
@@ -129,6 +134,9 @@ namespace MonoTests.System.IO.Pipes
       get;
     }
 
+    public string FormatArguments(IEnumerable<string> clientArgs) {
+      return FormatArguments(clientArgs.ToArray());
+    }
     public string FormatArguments(params string[] clientArgs) {
       var result = string.Join(" ", clientArgs);
 
@@ -141,66 +149,185 @@ namespace MonoTests.System.IO.Pipes
     {
       try 
       {
-        _log.Info("Test {0} started at {1}", this.TestName, DateTime.Now);
+        _log.Info("Test {0} started at {1:O}", this.TestName, DateTime.Now);
+        _log.Info("Working directory {0}", Environment.CurrentDirectory);
 
-        string outputFilename = null;
-        foreach (string arg in arguments) {
-          if (arg.StartsWith("/outfile:")) {
-            outputFilename = arg.Substring("/outfile:".Length);
+        this._executionArgs = arguments;
+        Stopwatch runTimer = Stopwatch.StartNew();
+
+        _log.Test("Starting testing thread");
+
+        Thread testThread = new Thread(new ThreadStart(this.ExecuteInternal));
+        testThread.Start();
+
+        while (testThread.IsAlive)
+        {
+          if (runTimer.Elapsed > this._timeoutDuration) {
+            _log.Error("Test timeout '{0}' has been exceeded, terminating", this._timeoutDuration);
+            testThread.Abort();
+            return 2;
           }
+
+          _log.Info("Test runtime of {0}", runTimer.Elapsed);
+
+          Thread.Sleep(1000);
         }
-        FileStream fileStream = null;
-        try {
-        if (outputFilename != null) {
-            _log.Info("Opening output file '{0}'", outputFilename);
-            fileStream = new FileStream(outputFilename, FileMode.Create);
-            _outFile = new StreamWriter(fileStream);
-            _outFile.AutoFlush = true;
-          } else { 
-            _log.Info("No output file is being generated, use /outfile:<filename> to generate output");
-          }
+        runTimer.Stop();
 
-          this._executionArgs = arguments;
-          Stopwatch runTimer = Stopwatch.StartNew();
-
-          _log.Info("Starting testing thread");
-
-          Thread testThread = new Thread(new ThreadStart(this.ExecuteInternal));
-          testThread.Start();
-
-          while (testThread.IsAlive)
-          {
-            if (runTimer.Elapsed > this._timeoutDuration) {
-              _log.Error("Test timeout '{0}' has been exceeded, terminating", this._timeoutDuration);
-              return 2;
-            }
-
-            Thread.Sleep(0);
-          }
-          runTimer.Stop();
-
-          if (this._executionError) {
-            _log.Error("Test failed in {0}", runTimer.Elapsed);
-            return 1;
-          }
-
-          _log.Info("Test Succeeded in {0}", runTimer.Elapsed);
-          return 0;
+        if (this._executionError) {
+          _log.Error("Test failed in {0}", runTimer.Elapsed);
+          return 1;
         }
-        finally {
-          if (_outFile != null) {
-            _outFile.Dispose();
-            _outFile = null;
-          }
-          if (fileStream != null) {
-            fileStream.Dispose();
-          }
-        }
+
+        _log.Info("Test Succeeded in {0}", runTimer.Elapsed);
+        return 0;
       }
       catch (Exception eError)
       {
         _log.Error(eError, "Test runner failed");
         return 3;
+      }
+    }
+
+    public class ProcessLauncher
+    {
+      private TestLogger _log;
+      private PipeTestWrapper _parent;
+      private List<string> _arguments = new List<string>();
+      private string _clientExe;
+      private Process _process; 
+      public readonly string ProcessSwitch;
+      public readonly bool ParseFailure;
+
+      public ProcessLauncher(PipeTestWrapper parent, string[] arguments)
+        : this (parent, "/client:", arguments)
+      {}
+
+      public ProcessLauncher(PipeTestWrapper parent, string processSwitch, string[] arguments) {
+        this._log = parent._log;
+        this._parent = parent;
+        this.ProcessSwitch = processSwitch;
+
+        foreach (string arg in arguments) {
+          if (arg.StartsWith(processSwitch)) {
+            _clientExe = arg.Substring(processSwitch.Length);
+          }
+        }
+        this.ParseFailure = _clientExe == null;
+      }
+
+      public void AddArgument(string sw, string format, params object[] args) {
+        AddArgument(sw + string.Format(format, args));
+      }
+      public void AddArgument(string sw, string data) {
+        AddArgument(sw + data);
+      }
+      public void AddArgument(string arg) {
+        if (_process != null) {
+          throw new InvalidOperationException("process already started");
+        }
+        _arguments.Add(arg); 
+      }
+
+      public void Launch() {
+        if (_process != null) {
+          throw new InvalidOperationException("Process already started");
+        }
+        if (_clientExe == null) {
+          throw new InvalidOperationException("Parse failure while trying to get client exe");
+        }
+
+        _log.Test("Starting process '{0}'", _clientExe);
+        _process = new Process();
+        _process.StartInfo.FileName = _clientExe;
+        _process.StartInfo.WorkingDirectory = Environment.CurrentDirectory;
+        _process.StartInfo.Arguments = _parent.FormatArguments(_arguments);
+        _process.StartInfo.UseShellExecute = false;
+        _process.Start();
+        _log.Test("Done starting process '{0}'", _clientExe);
+      }
+
+      public void WaitForExit() {
+        if (_process == null) {
+          throw new InvalidOperationException("Process not yet started");
+        }
+        _log.Test("Awaiting process '{0}' exit", _clientExe);
+        _process.WaitForExit();
+        _log.Test("Done awaiting process '{0}' exit", _clientExe);
+      }
+    }
+    /// <summary>
+    /// Similar to StreamReader class but with no buffering
+    /// </summary>
+    public class PipeReader : IDisposable {
+      private Stream _stream;
+      private Decoder _decoder;
+      private byte[] _minBuffer = new byte[8];
+      private int _offset = 0;
+      public PipeReader(Stream stream) {
+        this._stream = stream;
+        this._decoder = Encoding.UTF8.GetDecoder();
+      }
+      public char ReadChar() {
+        if (_offset != 0) { throw new InvalidOperationException("offset indicates illegal state"); }
+        _decoder.Reset();
+        do {
+          if (_stream.Read(_minBuffer, _offset, 1)==1) {
+            ++_offset;
+          } else {
+            _offset = 0;
+            throw new InvalidOperationException("Stream closed");
+          }
+        } while (_decoder.GetCharCount(_minBuffer, 0, _offset) <= 0); 
+        char[] result = new char[1];
+        if (_decoder.GetChars(_minBuffer, 0, _offset, result, 0)==1) {
+          _offset = 0;
+          return result[0];
+        } else {
+          _offset = 0;
+          throw new InvalidOperationException("Unexpected number of chars read from stream");
+        }
+      }
+      public string ReadLine() {
+        StringBuilder result = new StringBuilder();
+        bool gotReturn = false;
+        while (true) {
+          char next = this.ReadChar();
+          if (next == '\r' && !gotReturn) { gotReturn = true; }
+          else if (next == '\r') { result.Append(next); }
+          else if (gotReturn && next == '\n') { break; }
+          else { result.Append(next); gotReturn = false; }
+        }
+        return result.ToString();
+      }
+      public void Dispose() {
+        // dont actually dispose anything
+      }
+    }
+    public class PipeWriter : IDisposable {
+      private Stream _stream;
+      private Encoder _encoder;
+      private readonly int _newlineLen;
+      public PipeWriter(Stream stream) {
+        this._stream = stream;
+        this._encoder = Encoding.UTF8.GetEncoder();
+        _newlineLen = this._encoder.GetByteCount(PipeWriter.NewLine, 0, PipeWriter.NewLine.Length, true);
+      }
+      private static readonly char[] NewLine = new char[] { '\r', '\n' };
+
+      public void WriteLine(string s) {
+        char[] input = s.ToCharArray();
+        byte[] output = new byte[_encoder.GetByteCount(input, 0, input.Length, true) + _newlineLen];
+        int offset = _encoder.GetBytes(input, 0, input.Length, output, 0, true);
+        offset += _encoder.GetBytes(PipeWriter.NewLine, 0, PipeWriter.NewLine.Length, output, offset, true);
+        if (offset != output.Length) {
+          throw new InvalidOperationException("Incorrect offset while writing");
+        }
+        _stream.Write(output, 0, output.Length);
+      }
+
+      public void Dispose() {
+        // dont actually dispose anything
       }
     }
   }

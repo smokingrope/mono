@@ -5,16 +5,16 @@ using System.Diagnostics;
 
 namespace MonoTests.System.IO.Pipes
 {
-  public class T100_Client : PipeTestWrapper
+  public class T105_Client : PipeTestWrapper
   {
     public static int Main(string[] arguments) {
-      return new T100_Client().Execute(arguments);
+      return new T105_Client().Execute(arguments);
     }
 
     public override string TestDescription {
       get {
         return @"Creates an anonymous pipe client stream from the handle passed on the commandline,
-                 reads a single line of text and then exits";
+                 reads several lines of text and then exits";
       }
     }
 
@@ -39,7 +39,15 @@ namespace MonoTests.System.IO.Pipes
         using (PipeReader reader = new PipeReader(pipeClient)) 
         {
           string result = reader.ReadLine();
-          _log.Test("Received message: '{0}'", result);
+          _log.Test("Received message 1: '{0}'", result);
+          result = reader.ReadLine();
+          _log.Test("Received message 2: '{0}'", result);
+          result = reader.ReadLine();
+          _log.Test("Received message 3: '{0}'", result);
+          result = reader.ReadLine();
+          _log.Test("Received message 4: '{0}'", result);
+          result = reader.ReadLine();
+          _log.Test("Received message 5: '{0}'", result);
         }
       }
     }

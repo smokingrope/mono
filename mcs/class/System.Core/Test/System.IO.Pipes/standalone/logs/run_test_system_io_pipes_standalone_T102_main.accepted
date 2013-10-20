@@ -1,0 +1,7 @@
+[INFO][T102_ServerDispose_Main]Test T102_ServerDispose_Main started at 9/15/2013 9:29:12 AM
+[INFO][T102_ServerDispose_Main]Working directory /home/smokingrope/mono/mcs/class/System.Core/Test/System.IO.Pipes/standalone
+[TEST][T102_ServerDispose_Main]Starting testing thread
+[TEST][T102_ServerDispose_Main]Created pipe server stream
+[TEST][T102_ServerDispose_Main]Local copy of client handle disposed
+[TEST][T102_ServerDispose_Main]Disposed pipe server stream
+[INFO][T102_ServerDispose_Main]Test Succeeded in 00:00:00.0208903

@@ -5,17 +5,17 @@ using System.Diagnostics;
 
 namespace MonoTests.System.IO.Pipes
 {
-  public class T100_Server_Main : PipeTestWrapper
+  public class T105_Server_Main : PipeTestWrapper
   {
     public static int Main(string[] arguments) {
-      return new T100_Server_Main().Execute(arguments);
+      return new T105_Server_Main().Execute(arguments);
     }
 
     public override string TestDescription {
       get {
         return @"Creates an anonymous pipe server stream, 
                  invokes the client application specified on the commandline, 
-                 sends a single line of text across the anonymous pipe stream,
+                 sends several lines of text across the anonymous pipe stream,
                  exits";
       }
     }
@@ -40,8 +40,13 @@ namespace MonoTests.System.IO.Pipes
         _log.Test("Sending message");
         using (PipeWriter writer = new PipeWriter(pipeServer)) 
         {
-          writer.WriteLine("Message sent from anonymous pipe server stream");
+          writer.WriteLine("Message 1 sent from anonymous pipe server stream");
+          writer.WriteLine("Message 2 sent from anonymous pipe server stream");
+          writer.WriteLine("Message 3 sent from anonymous pipe server stream");
+          writer.WriteLine("Message 4 sent from anonymous pipe server stream");
+          writer.WriteLine("Message 5 sent from anonymous pipe server stream");
         }
+
         _log.Test("Message sending completed");
       }
       _log.Test("Disposed anonymous pipe server stream");

@@ -13,28 +13,28 @@ namespace MonoTests.System.IO.Pipes
 
     public override string TestDescription {
       get {
-        return @"Creates an anonymous pipe server stream, dispoe client handles, sets up a stream writer, then disposes everything";
+        return @"Creates an anonymous pipe server stream, dispoe client handles, sets up a stream writer, writes to it, then disposes everything. This was able to reproduce an issue with a double dispose of pipe handles in an unsafe manner _wapi_handle_unref_full. The error was caused by the stream underlying the AnonymousPipeServerStream capturing the actual file descriptor instead of a safe handle to the file descriptor, and then trying to dispose it during finalization (which only happens after it is written to)";
       }
     }
 
     protected override void DoTest(string[] arguments)
     {
-      _log.Info("Working directory {0}", Environment.CurrentDirectory);
-
       using (AnonymousPipeServerStream pipeServer = new AnonymousPipeServerStream(PipeDirection.Out))
       {
-        _log.Info("Created pipe server stream");
+        _log.Test("Created pipe server stream");
 
         pipeServer.DisposeLocalCopyOfClientHandle();
 
-        _log.Info("Local copy of client handle disposed");
+        _log.Test("Local copy of client handle disposed");
 
         using (StreamWriter writer = new StreamWriter(pipeServer)) {
           writer.WriteLine("TEST");         
         }
-        _log.Info("Disposed stream writer");
+
+        _log.Test("Disposed stream writer");
       }
-      _log.Info("Disposed pipe server stream");
+
+      _log.Test("Disposed pipe server stream");
     }
   }
 }

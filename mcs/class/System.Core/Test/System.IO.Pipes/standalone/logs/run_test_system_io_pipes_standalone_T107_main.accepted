@@ -1,0 +1,40 @@
+[INFO][T107_Server_Main]Test T107_Server_Main started at 2013-10-19T20:41:29.5676510-04:00
+[INFO][T107_Server_Main]Working directory /home/smokingrope/mono/mcs/class/System.Core/Test/System.IO.Pipes/standalone
+[TEST][T107_Server_Main]Starting testing thread
+[INFO][T107_Server_Main]Test runtime of 00:00:00.0010246
+[TEST][T107_Server_Main]Creating anonymous pipe server stream
+[TEST][T107_Server_Main]Starting process 'test_system_io_pipes_standalone_T107_client'
+[INFO][T107_Server_Main]Generated argument list:
+    /outHandle:6,4,5
+[TEST][T107_Server_Main]Done starting process 'test_system_io_pipes_standalone_T107_client'
+[TEST][T107_Server_Main]Sleeping for a few seconds so the client can maybe catch up?
+[INFO][T107_Client]Test T107_Client started at 2013-10-19T20:41:29.6164560-04:00
+[INFO][T107_Client]Working directory /home/smokingrope/mono/mcs/class/System.Core/Test/System.IO.Pipes/standalone
+[TEST][T107_Client]Starting testing thread
+[INFO][T107_Client]Test runtime of 00:00:00.0008802
+[TEST][T107_Client]Setting up streams
+[TEST][T107_Client]Created out client
+[TEST][T107_Client]Sending line 1
+[TEST][T107_Client]Sending line 2
+[TEST][T107_Client]Sending line 3
+[TEST][T107_Client]Sending line 4
+[TEST][T107_Client]Sending complete
+[INFO][T107_Server_Main]Test runtime of 00:00:01.0025489
+[INFO][T107_Client]Test Succeeded in 00:00:01.0016801
+[INFO][T107_Server_Main]Test runtime of 00:00:02.0037505
+[TEST][T107_Server_Main]Done Sleeping
+[TEST][T107_Server_Main]Setting up stream tools
+[TEST][T107_Server_Main]Awaiting response from client
+[TEST][T107_Server_Main]Response received
+[TEST][T107_Server_Main]Received message 'PIPE CLIENT STARTED'
+[TEST][T107_Server_Main]Synchronization with client completed
+[TEST][T107_Server_Main]Received message from client 'Sending message 1 from pipe client'
+[TEST][T107_Server_Main]Received message from client 'Sending message 2 from pipe client'
+[TEST][T107_Server_Main]Received message from client 'Sending last message from pipe client'
+[TEST][T107_Server_Main]Message sending completed
+[TEST][T107_Server_Main]Disposed anonymous pipe server stream
+[TEST][T107_Server_Main]Awaiting pipe client exit
+[TEST][T107_Server_Main]Awaiting process 'test_system_io_pipes_standalone_T107_client' exit
+[TEST][T107_Server_Main]Done awaiting process 'test_system_io_pipes_standalone_T107_client' exit
+[TEST][T107_Server_Main]Pipe client exited
+[INFO][T107_Server_Main]Test Succeeded in 00:00:03.0051029

@@ -56,7 +56,8 @@ convert_from_flags(int flags)
 
 gpointer _wapi_pipehandle_initialize (int fd, int handleFlags, gint32 *error)
 {
-  const char name[] = "<PIPE>";
+  const int fdStringLen = 20;
+  gchar fdString[fdStringLen];
 	struct _WapiHandle_file file_handle = {0};
 	gpointer handle;
 	int flags;
@@ -73,7 +74,7 @@ gpointer _wapi_pipehandle_initialize (int fd, int handleFlags, gint32 *error)
       return (INVALID_HANDLE_VALUE);
   }
 
-	DEBUG("%s: creating pipe handle type %s, fd %d", __func__, name, fd);
+	DEBUG("%s: creating pipe handle, fd %d", __func__, fd);
 
 #if !defined(__native_client__)	
 	/* Check if fd is valid */
@@ -104,26 +105,26 @@ gpointer _wapi_pipehandle_initialize (int fd, int handleFlags, gint32 *error)
     return (INVALID_HANDLE_VALUE);
   }
 
-	file_handle.fileaccess=convert_from_flags(flags);
+	file_handle.fileaccess=flags;
 #else
-  /* TODO: No idea what this is used for, assume provided flags are valid? */
-	file_handle.fileaccess = convert_from_flags(handleFlags);
+  /* GOOGLE NATIVE CLIENT?.. this hasn't been tested ever...
+     copied from create_stdhandle below...
+     presumably we aren't allowed to call fcntl() and check that the handle specified
+     is valid in this scenario?
+     not sure why we would be allowed to read/write to an anonymous pipe
+     but not call fcntl on it, but thats the current guess
+   */
+	file_handle.fileaccess = handleFlags;
 #endif
 
 	file_handle.fd = fd;
-  /* TODO: no idea what implications of this field is, just copied from create_stdhandle */
-	file_handle.filename = g_strdup(name);
+
+  g_sprintf(fdString, "%d", fd);
+  
+	file_handle.filename = g_strconcat("<PIPE:", fdString, ">");
 	/* TODO: no idea what implications of this field is, just copied from create_stdhandle */
 	file_handle.security_attributes=0;
 
-	/* TODO: no idea what implications of this field is, just copied from create_stdhandle */
-	/* Apparently input handles can't be written to.  (I don't
-	 * know if output or error handles can't be read from.)
-	 */
-	if (fd == 0) {
-		file_handle.fileaccess &= ~GENERIC_WRITE;
-	}
-	
 	/* TODO: no idea what implications of this field is, just copied from create_stdhandle */
 	file_handle.sharemode=0;
 	file_handle.attrs=0;

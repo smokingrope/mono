@@ -1,0 +1,34 @@
+[INFO][T108_Server_Main]Test T108_Server_Main started at 2013-10-19T20:44:04.3416730-04:00
+[INFO][T108_Server_Main]Working directory /home/smokingrope/mono/mcs/class/System.Core/Test/System.IO.Pipes/standalone
+[TEST][T108_Server_Main]Starting testing thread
+[INFO][T108_Server_Main]Test runtime of 00:00:00.0009110
+[TEST][T108_Server_Main]Creating anonymous pipe server stream
+[TEST][T108_Server_Main]Starting process 'test_system_io_pipes_standalone_T108_client'
+[INFO][T108_Server_Main]Generated argument list:
+    /inHandle:5,3
+[TEST][T108_Server_Main]Done starting process 'test_system_io_pipes_standalone_T108_client'
+[INFO][T108_Client]Test T108_Client started at 2013-10-19T20:44:04.3907280-04:00
+[INFO][T108_Client]Working directory /home/smokingrope/mono/mcs/class/System.Core/Test/System.IO.Pipes/standalone
+[TEST][T108_Client]Starting testing thread
+[INFO][T108_Client]Test runtime of 00:00:00.0012587
+[TEST][T108_Client]Setting up streams
+[TEST][T108_Client]Created in client
+[TEST][T108_Client]Reading first line from server
+[INFO][T108_Server_Main]Test runtime of 00:00:01.0024059
+[INFO][T108_Client]Test runtime of 00:00:01.0026105
+[INFO][T108_Server_Main]Test runtime of 00:00:02.0035524
+[TEST][T108_Server_Main]Setting up stream tools
+[TEST][T108_Server_Main]Sending data to client
+[TEST][T108_Server_Main]Message sending completed, awaiting client drain completion
+[TEST][T108_Client]Received first line from server 'Line 1'
+[TEST][T108_Client]Received second line from server 'Line 2'
+[TEST][T108_Client]Disposed stream readaer
+[TEST][T108_Client]Disposed Pipe client stream
+[TEST][T108_Server_Main]Pipe drain complete
+[TEST][T108_Server_Main]Disposed anonymous pipe server stream
+[TEST][T108_Server_Main]Awaiting pipe client exit
+[TEST][T108_Server_Main]Awaiting process 'test_system_io_pipes_standalone_T108_client' exit
+[INFO][T108_Client]Test Succeeded in 00:00:02.0034871
+[TEST][T108_Server_Main]Done awaiting process 'test_system_io_pipes_standalone_T108_client' exit
+[TEST][T108_Server_Main]Pipe client exited
+[INFO][T108_Server_Main]Test Succeeded in 00:00:03.0049511

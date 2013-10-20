@@ -2,21 +2,22 @@ using System;
 using System.IO;
 using System.IO.Pipes;
 using System.Diagnostics;
+using System.Threading;
 
 namespace MonoTests.System.IO.Pipes
 {
-  public class T100_Server_Main : PipeTestWrapper
+  public class T108_Server_Main : PipeTestWrapper
   {
     public static int Main(string[] arguments) {
-      return new T100_Server_Main().Execute(arguments);
+      return new T108_Server_Main().Execute(arguments);
     }
 
     public override string TestDescription {
       get {
         return @"Creates an anonymous pipe server stream, 
                  invokes the client application specified on the commandline, 
-                 sends a single line of text across the anonymous pipe stream,
-                 exits";
+                 sends a message across that pipe and waits for the client to consume it
+                 before terminating.";
       }
     }
 
@@ -30,25 +31,32 @@ namespace MonoTests.System.IO.Pipes
       }
 
       _log.Test("Creating anonymous pipe server stream");
-      using (AnonymousPipeServerStream pipeServer = new AnonymousPipeServerStream(PipeDirection.Out))
+      using (AnonymousPipeServerStream syncServer = new AnonymousPipeServerStream(PipeDirection.Out))
       {
-        pipeClient.AddArgument("/handle:", pipeServer.GetClientHandleAsString());
+        pipeClient.AddArgument("/inHandle:", syncServer.GetClientHandleAsString());
         pipeClient.Launch();
 
-        pipeServer.DisposeLocalCopyOfClientHandle();
+        global::System.Threading.Thread.Sleep(2000);
+        syncServer.DisposeLocalCopyOfClientHandle();
 
-        _log.Test("Sending message");
-        using (PipeWriter writer = new PipeWriter(pipeServer)) 
+        _log.Test("Setting up stream tools");
+        using (var writer = new PipeWriter(syncServer))
         {
-          writer.WriteLine("Message sent from anonymous pipe server stream");
-        }
-        _log.Test("Message sending completed");
+          _log.Test("Sending data to client");
+          writer.WriteLine("Line 1");
+          writer.WriteLine("Line 2");
+
+          _log.Test("Message sending completed, awaiting client drain completion");
+          syncServer.WaitForPipeDrain();
+
+          _log.Test("Pipe drain complete");
       }
       _log.Test("Disposed anonymous pipe server stream");
 
       _log.Test("Awaiting pipe client exit");
       pipeClient.WaitForExit();
       _log.Test("Pipe client exited");
+    }
     }
   }
 }

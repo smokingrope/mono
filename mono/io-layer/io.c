@@ -2157,9 +2157,13 @@ gint32 ves_icall_System_IO_MonoIO_PollFD(gint32 fd, gint16 events, gint16 *reven
   mono_pollfd poll;
   poll.fd = fd;
   poll.events = events;
+		
+  DEBUG("%s: pollfd %d with flags %d", __func__, fd, events);
 
   int result = mono_poll (&poll, 1, timeout);
   *revents = poll.revents;
+
+  DEBUG("%s: pollfd result %d with flags %d", __func__, result, *revents);
 
   if (result == -1) {
     SetLastError (_wapi_get_win32_file_error (errno));
@@ -2190,6 +2194,9 @@ gpointer ves_icall_System_IO_MonoIO_GetPipeHandle(int fd, int flags, gint32 *err
 
   // TODO: Remove, copied from GetStdHandle
 	handle = GINT_TO_POINTER (fd);
+
+  DEBUG("%s: initialize handle %d with flags %d", __func__, fd, flags);
+  DEBUG("%s: GENERIC_READ=%d, GENERIC_WRITE=%d", __func__, GENERIC_READ, GENERIC_WRITE);
 
   // Conciously reusing same mutex from GetStdHandle() for GetPipeHandle() 
   // - is there really any benefit to making a new one?

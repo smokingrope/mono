@@ -53,7 +53,6 @@ namespace System.IO.Pipes
 		public AnonymousPipeClientStream (PipeDirection direction, string pipeHandleAsString)
 			: base (direction, DefaultBufferSize)
 		{
-      Console.WriteLine("Initializing pipe client");
 			if (IsWindows)
 				impl = new Win32AnonymousPipeClient (this, pipeHandleAsString);
 			else

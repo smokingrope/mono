@@ -1,0 +1,65 @@
+[INFO][T106_Server_Main]Test T106_Server_Main started at 2013-10-19T20:41:03.6185340-04:00
+[INFO][T106_Server_Main]Working directory /home/smokingrope/mono/mcs/class/System.Core/Test/System.IO.Pipes/standalone
+[TEST][T106_Server_Main]Starting testing thread
+[INFO][T106_Server_Main]Test runtime of 00:00:00.0009538
+[TEST][T106_Server_Main]Creating anonymous pipe server stream
+[TEST][T106_Server_Main]Starting process 'test_system_io_pipes_standalone_T106_client'
+[INFO][T106_Server_Main]Generated argument list:
+    /inHandle:5,3 /outHandle:10,8,9
+[TEST][T106_Server_Main]Done starting process 'test_system_io_pipes_standalone_T106_client'
+[TEST][T106_Server_Main]Setting up stream tools
+[TEST][T106_Server_Main]Begin Synchronization with client
+[TEST][T106_Server_Main]Awaiting response from client
+[INFO][T106_Client]Test T106_Client started at 2013-10-19T20:41:03.6679510-04:00
+[INFO][T106_Client]Working directory /home/smokingrope/mono/mcs/class/System.Core/Test/System.IO.Pipes/standalone
+[TEST][T106_Client]Starting testing thread
+[INFO][T106_Client]Test runtime of 00:00:00.0009204
+[TEST][T106_Client]Setting up streams
+[INFO][T106_Client]Received in handle 5,3
+[INFO][T106_Client]Received out handle 10,8,9
+[TEST][T106_Client]Created in client
+[TEST][T106_Client]Created out client
+[TEST][T106_Client]Synchronizing with server
+[TEST][T106_Server_Main]Response received 'PIPE CLIENT STARTED'
+[TEST][T106_Server_Main]Synchronization with client completed
+[TEST][T106_Client]Awaiting response from server
+[TEST][T106_Client]Response received 'PIPE SERVER STARTED'
+[INFO][T106_Client]Begin Reading stream at 2013-10-19T20:41:03.8957870-04:00
+[INFO][T106_Server_Main]Test runtime of 00:00:01.0015162
+[INFO][T106_Client]Test runtime of 00:00:01.0029845
+[INFO][T106_Server_Main]Test runtime of 00:00:02.0026759
+[INFO][T106_Client]Test runtime of 00:00:02.0042135
+[TEST][T106_Server_Main]Sending message 1
+[INFO][T106_Server_Main]Wait begins at timestamp 2013-10-19T20:41:05.6937620-04:00
+[INFO][T106_Client]Receive completed at 2013-10-19T20:41:05.6957340-04:00
+[TEST][T106_Client]Received message 1: 'Message 1 sent from anonymous pipe server stream'
+[TEST][T106_Server_Main]Sending message 2
+[INFO][T106_Server_Main]Wait begins at timestamp 2013-10-19T20:41:05.6958540-04:00
+[INFO][T106_Client]Start Reading stream at 2013-10-19T20:41:05.8962610-04:00
+[INFO][T106_Client]Receive completed at 2013-10-19T20:41:05.8963360-04:00
+[TEST][T106_Client]Received message 2: 'Message 2 sent from anonymous pipe server stream'
+[TEST][T106_Server_Main]Sending message 3
+[INFO][T106_Server_Main]Wait begins at timestamp 2013-10-19T20:41:05.8964120-04:00
+[INFO][T106_Client]Start Reading stream at 2013-10-19T20:41:06.0969020-04:00
+[INFO][T106_Client]Receive completed at 2013-10-19T20:41:06.0970080-04:00
+[TEST][T106_Client]Received message 3: 'Message 3 sent from anonymous pipe server stream'
+[TEST][T106_Server_Main]Sending message 4
+[INFO][T106_Server_Main]Wait begins at timestamp 2013-10-19T20:41:06.0970900-04:00
+[INFO][T106_Client]Start Reading stream at 2013-10-19T20:41:06.2975520-04:00
+[INFO][T106_Client]Receive completed at 2013-10-19T20:41:06.2977250-04:00
+[TEST][T106_Client]Received message 4: 'Message 4 sent from anonymous pipe server stream'
+[TEST][T106_Server_Main]Sending message 5
+[INFO][T106_Server_Main]Wait begins at timestamp 2013-10-19T20:41:06.2978350-04:00
+[INFO][T106_Client]Start Reading stream at 2013-10-19T20:41:06.4982040-04:00
+[INFO][T106_Client]Receive completed at 2013-10-19T20:41:06.4983840-04:00
+[TEST][T106_Client]Received message 5: 'Message 5 sent from anonymous pipe server stream'
+[TEST][T106_Server_Main]Disposing stream writer
+[TEST][T106_Server_Main]Message sending completed
+[TEST][T106_Server_Main]Disposed anonymous pipe server stream
+[TEST][T106_Server_Main]Awaiting pipe client exit
+[TEST][T106_Server_Main]Awaiting process 'test_system_io_pipes_standalone_T106_client' exit
+[INFO][T106_Server_Main]Test runtime of 00:00:03.0039172
+[INFO][T106_Client]Test Succeeded in 00:00:03.0055830
+[TEST][T106_Server_Main]Done awaiting process 'test_system_io_pipes_standalone_T106_client' exit
+[TEST][T106_Server_Main]Pipe client exited
+[INFO][T106_Server_Main]Test Succeeded in 00:00:04.0054555

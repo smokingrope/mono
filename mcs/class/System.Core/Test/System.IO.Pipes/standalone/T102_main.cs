@@ -19,17 +19,15 @@ namespace MonoTests.System.IO.Pipes
 
     protected override void DoTest(string[] arguments)
     {
-      _log.Info("Working directory {0}", Environment.CurrentDirectory);
-
       using (AnonymousPipeServerStream pipeServer = new AnonymousPipeServerStream(PipeDirection.Out))
       {
-        _log.Info("Created pipe server stream");
+        _log.Test("Created pipe server stream");
 
         pipeServer.DisposeLocalCopyOfClientHandle();
 
-        _log.Info("Local copy of client handle disposed");
+        _log.Test("Local copy of client handle disposed");
       }
-      _log.Info("Disposed pipe server stream");
+      _log.Test("Disposed pipe server stream");
     }
   }
 }
