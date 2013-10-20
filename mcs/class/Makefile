@@ -106,7 +106,6 @@ net_2_0_dirs := \
 	System.Web.Extensions.Design	\
 	System.ComponentModel.DataAnnotations	\
 	System.Web.DynamicData		\
-	System.ServiceModel.Web		\
 	System.Web.Mvc2			\
 	Mono.C5				\
 	Mono.Management			\
@@ -124,9 +123,12 @@ net_2_0_only_dirs := \
 	System.Web.Extensions.Design_1.0	\
 	Compat.ICSharpCode.SharpZipLib	\
 	WindowsBase			\
+	System.ServiceModel.Web \
 	System.Data.Services.Client	\
 	System.Data.Services		\
-	System.Web.Mvc			
+	System.Web.Mvc \
+
+pcl_facade_dirs := Facades
 
 mobile_dirs := \
 	corlib	\
@@ -156,7 +158,7 @@ mobile_dirs := \
 	System.Net \
 	System.Windows \
 	System.Xml.Serialization \
-	Facades
+	$(pcl_facade_dirs)
 
 monodroid_dirs := \
 	Mono.CompilerServices.SymbolWriter	\
@@ -180,6 +182,8 @@ net_4_0_dirs := \
 	System.Windows.Forms.DataVisualization	\
 	System.Xaml \
 	WindowsBase \
+	System.ServiceModel.Activation \
+	System.ServiceModel \
 	System.ServiceModel.Routing \
 	System.ServiceModel.Discovery \
 	System.Runtime.Caching \
@@ -197,6 +201,7 @@ net_4_0_dirs := \
 	System.Reactive.Debugger \
 	Microsoft.Web.Infrastructure \
 	WebMatrix.Data \
+	System.ServiceModel.Web \
 	System.Data.Services.Client	\
 	System.Data.Services \
 	System.Json.Microsoft \
@@ -226,7 +231,7 @@ net_4_5_dirs := \
 	System.IO.Compression.FileSystem \
 	System.Windows \
 	System.Xml.Serialization \
-	Facades
+	$(pcl_facade_dirs)
 	
 net_2_0_SUBDIRS := $(common_dirs) $(net_2_0_dirs) $(net_2_0_only_dirs) aot-compiler
 monodroid_SUBDIRS := $(mobile_dirs) $(monodroid_dirs)

@@ -826,6 +826,7 @@ Mono implementation of WCF, Windows Communication Foundation
 %_prefix/lib/mono/4.0/System.IdentityModel.Selectors.dll
 %_prefix/lib/mono/4.0/System.IdentityModel.dll
 %_prefix/lib/mono/4.0/System.Runtime.DurableInstancing.dll
+%_prefix/lib/mono/4.0/System.ServiceModel.Activation.dll
 %_prefix/lib/mono/4.0/System.ServiceModel.Discovery.dll
 %_prefix/lib/mono/4.0/System.ServiceModel.Routing.dll
 %_prefix/lib/mono/4.0/System.ServiceModel.Web.dll
@@ -834,6 +835,7 @@ Mono implementation of WCF, Windows Communication Foundation
 %_prefix/lib/mono/4.5/System.IdentityModel.Selectors.dll
 %_prefix/lib/mono/4.5/System.IdentityModel.dll
 %_prefix/lib/mono/4.5/System.Runtime.DurableInstancing.dll
+%_prefix/lib/mono/4.5/System.ServiceModel.Activation.dll
 %_prefix/lib/mono/4.5/System.ServiceModel.Discovery.dll
 %_prefix/lib/mono/4.5/System.ServiceModel.Routing.dll
 %_prefix/lib/mono/4.5/System.ServiceModel.Web.dll
@@ -844,6 +846,7 @@ Mono implementation of WCF, Windows Communication Foundation
 %_prefix/lib/mono/gac/System.IdentityModel.Selectors
 %_prefix/lib/mono/gac/System.Runtime.DurableInstancing
 %_prefix/lib/mono/gac/System.ServiceModel
+%_prefix/lib/mono/gac/System.ServiceModel.Activation
 %_prefix/lib/mono/gac/System.ServiceModel.Discovery
 %_prefix/lib/mono/gac/System.ServiceModel.Routing
 %_prefix/lib/mono/gac/System.ServiceModel.Web
@@ -905,8 +908,10 @@ Mono implementation of ASP.NET, Remoting and Web Services.
 %config %_sysconfdir/mono/2.0/Browsers
 %config %_sysconfdir/mono/2.0/DefaultWsdlHelpGenerator.aspx
 %config %_sysconfdir/mono/2.0/web.config
+%config %_sysconfdir/mono/4.0/Browsers
 %config %_sysconfdir/mono/4.0/DefaultWsdlHelpGenerator.aspx
 %config %_sysconfdir/mono/4.0/web.config
+%config %_sysconfdir/mono/4.5/Browsers
 %config %_sysconfdir/mono/4.5/DefaultWsdlHelpGenerator.aspx
 %config %_sysconfdir/mono/4.5/web.config
 %config %_sysconfdir/mono/browscap.ini

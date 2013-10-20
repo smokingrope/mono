@@ -117,9 +117,9 @@ namespace Mono.CSharp {
 	//
 	public class Constraints
 	{
-		SimpleMemberName tparam;
-		List<FullNamedExpression> constraints;
-		Location loc;
+		readonly SimpleMemberName tparam;
+		readonly List<FullNamedExpression> constraints;
+		readonly Location loc;
 		bool resolved;
 		bool resolving;
 		
@@ -398,7 +398,7 @@ namespace Mono.CSharp {
 	//
 	public class TypeParameter : MemberCore, ITypeDefinition
 	{
-		static readonly string[] attribute_target = new string [] { "type parameter" };
+		static readonly string[] attribute_target = { "type parameter" };
 		
 		Constraints constraints;
 		GenericTypeParameterBuilder builder;
@@ -631,8 +631,21 @@ namespace Mono.CSharp {
 			if (spec.InterfacesDefined != null)
 				builder.SetInterfaceConstraints (spec.InterfacesDefined.Select (l => l.GetMetaInfo ()).ToArray ());
 
-			if (spec.TypeArguments != null)
-				builder.SetInterfaceConstraints (spec.TypeArguments.Select (l => l.GetMetaInfo ()).ToArray ());
+			if (spec.TypeArguments != null) {
+				var meta_constraints = new List<MetaType> (spec.TypeArguments.Length);
+				foreach (var c in spec.TypeArguments) {
+					//
+					// Inflated type parameters can collide with special constraint types, don't
+					// emit any such type parameter.
+					//
+					if (c.BuiltinType == BuiltinTypeSpec.Type.Object || c.BuiltinType == BuiltinTypeSpec.Type.ValueType)
+						continue;
+
+					meta_constraints.Add (c.GetMetaInfo ());
+				}
+
+				builder.SetInterfaceConstraints (meta_constraints.ToArray ());
+			}
 
 			builder.SetGenericParameterAttributes (attr);
 		}
@@ -2836,7 +2849,7 @@ namespace Mono.CSharp {
 				var mi = Delegate.GetInvokeMethod (t_i);
 				TypeSpec rtype = mi.ReturnType;
 
-				if (tic.IsReturnTypeNonDependent (ec, mi, rtype)) {
+				if (tic.IsReturnTypeNonDependent (mi, rtype)) {
 					// It can be null for default arguments
 					if (arguments[i] == null)
 						continue;
@@ -2935,15 +2948,20 @@ namespace Mono.CSharp {
 
 		public void AddCommonTypeBound (TypeSpec type)
 		{
-			AddToBounds (new BoundInfo (type, BoundKind.Lower), 0);
+			AddToBounds (new BoundInfo (type, BoundKind.Lower), 0, false);
 		}
 
-		void AddToBounds (BoundInfo bound, int index)
+		public void AddCommonTypeBoundAsync (TypeSpec type)
+		{
+			AddToBounds (new BoundInfo (type, BoundKind.Lower), 0, true);
+		}
+
+		void AddToBounds (BoundInfo bound, int index, bool voidAllowed)
 		{
 			//
 			// Some types cannot be used as type arguments
 			//
-			if (bound.Type.Kind == MemberKind.Void || bound.Type.IsPointer || bound.Type.IsSpecialRuntimeType ||
+			if ((bound.Type.Kind == MemberKind.Void && !voidAllowed) || bound.Type.IsPointer || bound.Type.IsSpecialRuntimeType ||
 				bound.Type == InternalType.MethodGroup || bound.Type == InternalType.AnonymousMethod)
 				return;
 
@@ -3017,7 +3035,7 @@ namespace Mono.CSharp {
 			if (pos == -1)
 				return 0;
 
-			AddToBounds (new BoundInfo (u, BoundKind.Exact), pos);
+			AddToBounds (new BoundInfo (u, BoundKind.Exact), pos, false);
 			return 1;
 		}
 
@@ -3283,7 +3301,7 @@ namespace Mono.CSharp {
 		// Tests whether all delegate input arguments are fixed and generic output type
 		// requires output type inference 
 		//
-		public bool IsReturnTypeNonDependent (ResolveContext ec, MethodSpec invoke, TypeSpec returnType)
+		public bool IsReturnTypeNonDependent (MethodSpec invoke, TypeSpec returnType)
 		{
 			AParametersCollection d_parameters = invoke.Parameters;
 
@@ -3348,7 +3366,7 @@ namespace Mono.CSharp {
 			// If V is one of the unfixed type arguments
 			int pos = IsUnfixed (v);
 			if (pos != -1) {
-				AddToBounds (new BoundInfo (u, inversed ? BoundKind.Upper : BoundKind.Lower), pos);
+				AddToBounds (new BoundInfo (u, inversed ? BoundKind.Upper : BoundKind.Lower), pos, false);
 				return 1;
 			}			
 
@@ -3516,7 +3534,7 @@ namespace Mono.CSharp {
 				var invoke = Delegate.GetInvokeMethod (t);
 				TypeSpec rtype = invoke.ReturnType;
 
-				if (!IsReturnTypeNonDependent (ec, invoke, rtype))
+				if (!IsReturnTypeNonDependent (invoke, rtype))
 					return 0;
 
 				// LAMESPEC: Standard does not specify that all methodgroup arguments

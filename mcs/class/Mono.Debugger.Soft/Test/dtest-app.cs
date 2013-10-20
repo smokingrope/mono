@@ -132,6 +132,13 @@ public struct GStruct<T> {
 	}
 }
 
+public struct NestedStruct {
+	NestedInner nested1, nested2;
+}
+
+public struct NestedInner {
+}
+
 interface ITest
 {
 	void Foo ();
@@ -202,6 +209,7 @@ public class Tests : TestsBase, ITest2
 	[ThreadStatic]
 	public static int tls_i;
 	public static bool is_attached = Debugger.IsAttached;
+	public NestedStruct nested_struct;
 
 #pragma warning restore 0414
 
@@ -349,6 +357,7 @@ public class Tests : TestsBase, ITest2
 		} catch {
 		}
 		ss7 ();
+		ss_nested ();
 		ss_regress_654694 ();
 	}
 
@@ -421,6 +430,26 @@ public class Tests : TestsBase, ITest2
 	[MethodImplAttribute (MethodImplOptions.NoInlining)]
 	public static void ss7_3 () {
 		throw new Exception ();
+	}
+
+	[MethodImplAttribute (MethodImplOptions.NoInlining)]
+	public static void ss_nested () {
+		ss_nested_1 (ss_nested_2 ());
+		ss_nested_1 (ss_nested_2 ());
+		ss_nested_3 ();
+	}
+
+	[MethodImplAttribute (MethodImplOptions.NoInlining)]
+	public static void ss_nested_1 (int i) {
+	}
+
+	[MethodImplAttribute (MethodImplOptions.NoInlining)]
+	public static int ss_nested_2 () {
+		return 0;
+	}
+
+	[MethodImplAttribute (MethodImplOptions.NoInlining)]
+	public static void ss_nested_3 () {
 	}
 
 	[MethodImplAttribute (MethodImplOptions.NoInlining)]

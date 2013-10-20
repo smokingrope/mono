@@ -133,7 +133,7 @@
 #endif
 
 /* Version number of the AOT file format */
-#define MONO_AOT_FILE_VERSION 93
+#define MONO_AOT_FILE_VERSION 95
 
 //TODO: This is x86/amd64 specific.
 #define mono_simd_shuffle_mask(a,b,c,d) ((a) | ((b) << 2) | ((c) << 4) | ((d) << 6))
@@ -340,8 +340,10 @@ typedef struct {
  */
 typedef MonoStackFrameInfo StackFrameInfo;
 
+#define MONO_SEQ_POINT_FLAG_NONEMPTY_STACK 1
+
 typedef struct {
-	int il_offset, native_offset;
+	int il_offset, native_offset, flags;
 	/* Indexes of successor sequence points */
 	int *next;
 	/* Number of entries in next */
@@ -868,6 +870,7 @@ enum {
 	MONO_INST_TAILCALL   = 4,
 	MONO_INST_VOLATILE   = 4,
 	MONO_INST_NOTYPECHECK    = 4,
+	MONO_INST_NONEMPTY_STACK = 4, /* in SEQ_POINT */
 	MONO_INST_UNALIGNED  = 8,
     MONO_INST_CFOLD_TAKEN = 8, /* On branches */
     MONO_INST_CFOLD_NOT_TAKEN = 16, /* On branches */
@@ -1047,16 +1050,6 @@ typedef struct {
 	MonoContext orig_ex_ctx;
 	gboolean orig_ex_ctx_set;
 } MonoJitTlsData;
-
-/* TLS entries used by JITted code */
-typedef enum {
-	/* mono_thread_internal_current () */
-	TLS_KEY_THREAD = 0,
-	TLS_KEY_JIT_TLS = 1,
-	/* mono_domain_get () */
-	TLS_KEY_DOMAIN = 2,
-	TLS_KEY_LMF = 3
-} MonoJitTlsKey;
 
 /*
  * This structure is an extension of MonoLMF and contains extra information.
@@ -1882,6 +1875,7 @@ MonoDebugOptions *mini_get_debug_options   (void) MONO_INTERNAL;
 /* helper methods */
 void      mono_disable_optimizations       (guint32 opts) MONO_INTERNAL;
 void      mono_set_optimizations           (guint32 opts) MONO_INTERNAL;
+guint32   mono_get_optimizations_for_method (MonoMethod *method, guint32 default_opt) MONO_INTERNAL;
 void      mono_set_verbose_level           (guint32 level) MONO_INTERNAL;
 MonoJumpInfoToken* mono_jump_info_token_new (MonoMemPool *mp, MonoImage *image, guint32 token) MONO_INTERNAL;
 MonoJumpInfoToken* mono_jump_info_token_new2 (MonoMemPool *mp, MonoImage *image, guint32 token, MonoGenericContext *context) MONO_INTERNAL;
@@ -1963,7 +1957,8 @@ MonoNativeTlsKey mono_get_jit_tls_key       (void) MONO_INTERNAL;
 gint32    mono_get_jit_tls_offset           (void) MONO_INTERNAL;
 gint32    mono_get_lmf_tls_offset           (void) MONO_INTERNAL;
 gint32    mono_get_lmf_addr_tls_offset      (void) MONO_INTERNAL;
-int       mini_get_tls_offset               (MonoJitTlsKey key) MONO_INTERNAL;
+int       mini_get_tls_offset               (MonoTlsKey key) MONO_INTERNAL;
+MonoInst* mono_create_tls_get               (MonoCompile *cfg, MonoTlsKey key) MONO_INTERNAL;
 MonoInst* mono_get_jit_tls_intrinsic        (MonoCompile *cfg) MONO_INTERNAL;
 MonoInst* mono_get_domain_intrinsic         (MonoCompile* cfg) MONO_INTERNAL;
 MonoInst* mono_get_thread_intrinsic         (MonoCompile* cfg) MONO_INTERNAL;
@@ -2040,6 +2035,12 @@ void mono_nacl_gc(void);
 #else
 #define NACL_SIZE(a, b) (a)
 #endif
+
+static inline MonoMethod*
+jinfo_get_method (MonoJitInfo *ji)
+{
+	return mono_jit_info_get_method (ji);
+}
 
 /* AOT */
 void      mono_aot_init                     (void) MONO_INTERNAL;
@@ -2180,6 +2181,7 @@ void              mono_emit_unwind_op (MonoCompile *cfg, int when,
 									   int val) MONO_INTERNAL;
 MonoTrampInfo*    mono_tramp_info_create (const char *name, guint8 *code, guint32 code_size, MonoJumpInfo *ji, GSList *unwind_ops) MONO_INTERNAL;
 void              mono_tramp_info_free (MonoTrampInfo *info) MONO_INTERNAL;
+void              mono_tramp_info_register (MonoTrampInfo *info) MONO_INTERNAL;
 
 int               mono_method_to_ir (MonoCompile *cfg, MonoMethod *method, MonoBasicBlock *start_bblock, MonoBasicBlock *end_bblock, 
 									 MonoInst *return_var, GList *dont_inline, MonoInst **inline_args, 

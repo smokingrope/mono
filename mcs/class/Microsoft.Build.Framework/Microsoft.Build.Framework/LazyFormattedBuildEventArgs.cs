@@ -1,9 +1,10 @@
 //
-// IServiceHostFactory.cs
+// LazyFormattedBuildEventArgs.cs
 //
-// Author: Atsushi Enomoto (atsushi@ximian.com)
-//
-// Copyright (C) 2006 Novell, Inc (http://www.novell.com)
+// Author:
+//   Atsushi Enomoto <atsushi@xamarin.com>
+// 
+// (C) 2013 Xamarin Inc.
 //
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
@@ -12,10 +13,10 @@
 // distribute, sublicense, and/or sell copies of the Software, and to
 // permit persons to whom the Software is furnished to do so, subject to
 // the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be
 // included in all copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 // EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 // MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -23,15 +24,32 @@
 // LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-//
-using System;
-using System.ServiceModel.Channels;
 
-namespace System.ServiceModel.Activation
+using System;
+using System.Threading;
+
+namespace Microsoft.Build.Framework
 {
-	public interface IServiceHostFactory
+	[Serializable]		
+	public abstract class LazyFormattedBuildEventArgs : BuildEventArgs
 	{
-		ServiceHostBase CreateServiceHost (string constructorString,
-			Uri [] baseAddresses);
+		
+		protected LazyFormattedBuildEventArgs ()
+			: this (null, null, null)
+		{
+		}
+
+		protected LazyFormattedBuildEventArgs (string message, string helpKeyword,
+					  string senderName)
+			: this (message, helpKeyword, senderName, DateTime.Now)
+		{
+		}
+
+		protected LazyFormattedBuildEventArgs (string message, string helpKeyword,
+					  string senderName, DateTime eventTimestamp,
+					  params object [] messageArgs)
+			: base (string.Format (message, messageArgs), helpKeyword, senderName, eventTimestamp)
+		{
+		}
 	}
 }
