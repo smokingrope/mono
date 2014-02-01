@@ -43,6 +43,8 @@ namespace System.IO.Pipes
 	[HostProtection (SecurityAction.LinkDemand, MayLeakOnAbort = true)]
 	public sealed class AnonymousPipeServerStream : PipeStream
 	{
+    private const int BUFFERLESS_SIZE = 1;
+
 		public AnonymousPipeServerStream ()
 			: this (PipeDirection.Out)
 		{
@@ -54,7 +56,7 @@ namespace System.IO.Pipes
 		}
 
 		public AnonymousPipeServerStream (PipeDirection direction, HandleInheritability inheritability)
-			: this (direction, inheritability, DefaultBufferSize)
+			: this (direction, inheritability, BUFFERLESS_SIZE)
 		{
 		}
 
@@ -80,7 +82,7 @@ namespace System.IO.Pipes
 
 		[MonoTODO]
 		public AnonymousPipeServerStream (PipeDirection direction, SafePipeHandle serverSafePipeHandle, SafePipeHandle clientSafePipeHandle)
-			: base (direction, DefaultBufferSize)
+			: base (direction, BUFFERLESS_SIZE)
 		{
 			if (serverSafePipeHandle == null)
 				throw new ArgumentNullException ("serverSafePipeHandle");
@@ -121,6 +123,11 @@ namespace System.IO.Pipes
 			get { return PipeTransmissionMode.Byte; }
 		}
 
+    internal override bool IsBrokenInternal()
+    {
+      return impl.IsBroken(); 
+    }
+
 		[MonoTODO]
 		public void DisposeLocalCopyOfClientHandle ()
 		{
@@ -130,10 +137,13 @@ namespace System.IO.Pipes
 		public string GetClientHandleAsString ()
 		{
       return impl.GetClientHandleAsString();
-			// We use int64 for safety.
-      // TODO: Delete this
-			//return impl.ClientHandle.DangerousGetHandle ().ToInt64 ().ToString (NumberFormatInfo.InvariantInfo);
 		}
+
+    protected override void Dispose (bool disposing)
+    {
+      base.Dispose(disposing);
+      if (disposing) { impl.Dispose(); }
+    }
 	}
 }
 

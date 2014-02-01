@@ -43,9 +43,7 @@ namespace System.IO.Pipes
 	[HostProtection (SecurityAction.LinkDemand, MayLeakOnAbort = true)]
 	public abstract class PipeStream : Stream
 	{
-		// FIXME: not precise.
-		internal const int DefaultBufferSize = 0x400;
-
+    protected const int DefaultBufferSize = 0x400;
 		internal static bool IsWindows {
 			get { return Win32Marshal.IsWindows; }
 		}
@@ -105,7 +103,6 @@ namespace System.IO.Pipes
 		PipeTransmissionMode transmission_mode, read_trans_mode;
 		int buffer_size;
 		SafePipeHandle handle;
-		Stream stream;
 
 		public override bool CanRead {
 			get { return !IsClosedInternal() && (direction & PipeDirection.In) != 0; }
@@ -148,19 +145,6 @@ namespace System.IO.Pipes
         _isConnected = value;
       }
     }
-
-		internal Stream Stream {
-			get {
-				if (!IsConnected)
-					throw new InvalidOperationException ("Pipe is not connected");
-				if (stream == null)
-					stream = new FileStream (handle.DangerousGetHandle (),
-								 CanRead ? (CanWrite ? FileAccess.ReadWrite : FileAccess.Read)
-								 	 : FileAccess.Write, false, buffer_size, IsAsync);
-				return stream;
-			}
-			set { stream = value; }
-		}
 
 		protected bool IsHandleExposed { get; private set; }
 
@@ -254,7 +238,7 @@ namespace System.IO.Pipes
     // connected means client / server connection has been established?
     private bool _isConnected;
     internal virtual bool IsConnectedInternal() {
-      return _isConnected;
+      return _isConnected && !_isClosed;
     }
 
     // Disconnected means link between client / server was open, but has since been terminated
@@ -406,44 +390,51 @@ namespace System.IO.Pipes
     {
     }
 
-		[MonoTODO]
 		public override int Read ([In] byte [] buffer, int offset, int count)
 		{
 			CheckReadOperations ();
 
-			return Stream.Read (buffer, offset, count);
+      MonoIOError error;
+      int amount = MonoIO.Read (handle.DangerousGetHandle(), buffer, offset, count, out error);
+      if (error != MonoIOError.ERROR_SUCCESS) {
+        throw MonoIO.GetException ("<PIPE>", error);
+      }
+      return amount;
 		}
 
-		[MonoTODO]
 		public override int ReadByte ()
 		{
-			CheckReadOperations ();
-
-			return Stream.ReadByte ();
+      byte []result = new byte[1];
+      if (Read(result, 0, 1)>0) {
+        return result[0];
+      } else {
+        return -1;
+      }
 		}
 
-		[MonoTODO]
 		public override void Write (byte [] buffer, int offset, int count)
 		{
 			CheckWriteOperations ();
 
-			Stream.Write (buffer, offset, count);
+      MonoIOError error;
+      int amount = MonoIO.Write (handle.DangerousGetHandle(), buffer, offset, count, out error);
+      if (error != MonoIOError.ERROR_SUCCESS) {
+        throw MonoIO.GetException("<PIPE>", error);
+      }
 		}
 
-		[MonoTODO]
 		public override void WriteByte (byte value)
 		{
-			CheckWriteOperations ();
-
-			Stream.WriteByte (value);
+      byte[] output = new byte[1];
+      output[0] = value;
+      Write(output, 0, 1);
 		}
 
-		[MonoTODO]
 		public override void Flush ()
 		{
 			CheckWriteOperations ();
 
-			Stream.Flush ();
+      // completely unbuffered so we don't need to do anything
 		}
 
 		// async

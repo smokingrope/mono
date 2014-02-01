@@ -27,8 +27,19 @@ namespace MonoTests.System.IO.Pipes
 
         _log.Test("Local copy of client handle disposed");
 
-        using (StreamWriter writer = new StreamWriter(pipeServer)) {
-          writer.WriteLine("TEST");         
+        using (PipeWriter writer = new PipeWriter(pipeServer)) {
+          try {
+            _log.Test("Ready to attempt write to pipe");
+            writer.WriteLine("TEST");         
+            throw new InvalidOperationException("Expected a broken pipe exception to be generated before reaching this point");
+          } catch (IOException eError) {
+            if (eError.Message == "The pipe is broken") {
+              _log.Test("Received expected IO Exception because no clients are listening for messages.");
+            } else {
+              _log.Error("Exception message: {0}", eError.Message);
+              throw;
+            }
+          }
         }
 
         _log.Test("Disposed stream writer");

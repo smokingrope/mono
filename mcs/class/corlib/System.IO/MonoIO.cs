@@ -297,12 +297,20 @@ namespace System.IO
 		public extern static int Read (IntPtr handle, byte [] dest,
 					       int dest_offset, int count,
 					       out MonoIOError error);
+
+		[MethodImplAttribute (MethodImplOptions.InternalCall)]
+    public extern static int ReadSafeHandle (SafeHandle handle, byte[] dest, int dest_offset, int count, out MonoIOError error);
 		
 		[MethodImplAttribute (MethodImplOptions.InternalCall)]
 		public extern static int Write (IntPtr handle, [In] byte [] src,
 						int src_offset, int count,
 						out MonoIOError error);
 		
+		[MethodImplAttribute (MethodImplOptions.InternalCall)]
+		public extern static int WriteSafeHandle (SafeHandle handle, [In] byte [] src,
+						int src_offset, int count,
+						out MonoIOError error);
+
 		[MethodImplAttribute (MethodImplOptions.InternalCall)]
 		public extern static long Seek (IntPtr handle, long offset,
 						SeekOrigin origin,
@@ -443,7 +451,7 @@ namespace System.IO
       POLLNVAL = 32
     }
     [MethodImplAttribute (MethodImplOptions.InternalCall)]
-    public extern static int PollFD(SafeHandle fd, PollFlags events, out PollFlags revents, int timeout);
+    public extern static int PollFD(int fd, PollFlags events, out PollFlags revents, int timeout);
 
     // source constants in mono/io-layer/io.h
     public enum GetPipeHandleFlag : uint {

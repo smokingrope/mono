@@ -9,7 +9,7 @@ MONO = PATH=$(MONO_APP_PATH) MONO_PATH=$(MONO_PATH) MONO_CFG_DIR=$(MONO_CFG_DIR)
 MONO_DBG_FLAGS = --debug 
 MONO_TEST = MONO_ENV_OPTIONS='$(MONO_DBG_FLAGS)' $(MONO) 
 MCS = $(MONO) ../../../../../mcs/mcs.exe
-MCS_TEST = $(MCS) /target:exe PipeTestWrapper.cs
+MCS_TEST = $(MCS) /debug+ /target:exe PipeTestWrapper.cs
 LOGDIR = logs/
 
 # Compare latest output to accepted output and fail if any lines (except those starting with [INFO])
@@ -35,7 +35,13 @@ all: test_system_io_pipes_standalone_T100_client \
 		 test_system_io_pipes_standalone_T107_main \
 		 test_system_io_pipes_standalone_T107_client \
 		 test_system_io_pipes_standalone_T108_main \
-		 test_system_io_pipes_standalone_T108_client
+		 test_system_io_pipes_standalone_T108_client \
+		 test_system_io_pipes_standalone_T109_main \
+		 test_system_io_pipes_standalone_T109_client  \
+		 test_system_io_pipes_standalone_T110_main \
+		 test_system_io_pipes_standalone_T110_client \
+		 test_system_io_pipes_standalone_T111_main \
+		 test_system_io_pipes_standalone_T111_client 
 
 test: run_test_system_io_pipes_standalone_T100_main \
 			run_test_system_io_pipes_standalone_T101_main \
@@ -45,7 +51,10 @@ test: run_test_system_io_pipes_standalone_T100_main \
 			run_test_system_io_pipes_standalone_T105_main \
 			run_test_system_io_pipes_standalone_T106_main \
 			run_test_system_io_pipes_standalone_T107_main \
-			run_test_system_io_pipes_standalone_T108_main
+			run_test_system_io_pipes_standalone_T108_main \
+			run_test_system_io_pipes_standalone_T109_main \
+			run_test_system_io_pipes_standalone_T110_main \
+			run_test_system_io_pipes_standalone_T111_main 
 
 test_system_io_pipes_standalone_T100_client: T100_client.cs PipeTestWrapper.cs
 	$(MCS_TEST) /out:$@ T100_client.cs
@@ -115,6 +124,30 @@ test_system_io_pipes_standalone_T108_main: test_system_io_pipes_standalone_T108_
 	$(MCS_TEST) /out:$@ T108_main.cs
 run_test_system_io_pipes_standalone_T108_main: test_system_io_pipes_standalone_T108_main
 	$(MONO_TEST) test_system_io_pipes_standalone_T108_main /client:test_system_io_pipes_standalone_T108_client > $(LOGDIR)$@.latest
+	$(call COMPARE_OUTPUT, $(LOGDIR)$@.accepted, $(LOGDIR)$@.latest)
+
+test_system_io_pipes_standalone_T109_client: T109_client.cs PipeTestWrapper.cs
+	$(MCS_TEST) /out:$@ T109_client.cs
+test_system_io_pipes_standalone_T109_main: test_system_io_pipes_standalone_T109_client T109_main.cs PipeTestWrapper.cs
+	$(MCS_TEST) /out:$@ T109_main.cs
+run_test_system_io_pipes_standalone_T109_main: test_system_io_pipes_standalone_T109_main
+	$(MONO_TEST) test_system_io_pipes_standalone_T109_main /client:test_system_io_pipes_standalone_T109_client > $(LOGDIR)$@.latest
+	$(call COMPARE_OUTPUT, $(LOGDIR)$@.accepted, $(LOGDIR)$@.latest)
+
+test_system_io_pipes_standalone_T110_client: T110_client.cs PipeTestWrapper.cs
+	$(MCS_TEST) /out:$@ T110_client.cs
+test_system_io_pipes_standalone_T110_main: test_system_io_pipes_standalone_T110_client T110_main.cs PipeTestWrapper.cs
+	$(MCS_TEST) /out:$@ T110_main.cs
+run_test_system_io_pipes_standalone_T110_main: test_system_io_pipes_standalone_T110_main
+	$(MONO_TEST) test_system_io_pipes_standalone_T110_main /client:test_system_io_pipes_standalone_T110_client > $(LOGDIR)$@.latest
+	$(call COMPARE_OUTPUT, $(LOGDIR)$@.accepted, $(LOGDIR)$@.latest)
+
+test_system_io_pipes_standalone_T111_client: T111_client.cs PipeTestWrapper.cs
+	$(MCS_TEST) /out:$@ T111_client.cs
+test_system_io_pipes_standalone_T111_main: test_system_io_pipes_standalone_T111_client T111_main.cs PipeTestWrapper.cs
+	$(MCS_TEST) /out:$@ T111_main.cs
+run_test_system_io_pipes_standalone_T111_main: test_system_io_pipes_standalone_T111_main
+	$(MONO_TEST) test_system_io_pipes_standalone_T111_main /client:test_system_io_pipes_standalone_T111_client > $(LOGDIR)$@.latest
 	$(call COMPARE_OUTPUT, $(LOGDIR)$@.accepted, $(LOGDIR)$@.latest)
 
 .PHONY: all test

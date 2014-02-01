@@ -72,6 +72,11 @@ namespace System.IO.Pipes
 		}
 
     public abstract void Dispose();
+
+    public virtual bool IsBroken()
+    {
+      throw new NotImplementedException("TODO");
+    }
 	}
 
 	class Win32AnonymousPipeClient : Win32AnonymousPipe, IAnonymousPipeClient
@@ -216,6 +221,11 @@ namespace System.IO.Pipes
 		{
 			throw new NotImplementedException ();
 		}
+
+    public virtual bool IsBroken()
+    {
+      throw new NotImplementedException();
+    }
 
     public abstract void Dispose();
 	}

@@ -43,6 +43,8 @@ namespace System.IO.Pipes
 	[HostProtection (SecurityAction.LinkDemand, MayLeakOnAbort = true)]
 	public sealed class AnonymousPipeClientStream : PipeStream
 	{
+    private const int BUFFERLESS_SIZE = 1;
+
 		IAnonymousPipeClient impl;
 
 		public AnonymousPipeClientStream (string pipeHandleAsString)
@@ -51,7 +53,7 @@ namespace System.IO.Pipes
 		}
 
 		public AnonymousPipeClientStream (PipeDirection direction, string pipeHandleAsString)
-			: base (direction, DefaultBufferSize)
+			: base (direction, BUFFERLESS_SIZE)
 		{
 			if (IsWindows)
 				impl = new Win32AnonymousPipeClient (this, pipeHandleAsString);
@@ -63,7 +65,7 @@ namespace System.IO.Pipes
 		}
 
 		public AnonymousPipeClientStream (PipeDirection direction,SafePipeHandle safePipeHandle)
-			: base (direction, DefaultBufferSize)
+			: base (direction, BUFFERLESS_SIZE)
 		{
 			if (IsWindows)
 				impl = new Win32AnonymousPipeClient (this, safePipeHandle);
@@ -74,10 +76,24 @@ namespace System.IO.Pipes
 			IsConnected = true;
 		}
 
+    internal override void WaitForPipeDrainInternal() {
+      impl.WaitForPipeDrain();
+    }
+
 		~AnonymousPipeClientStream ()
 		{
 			// To be compatible with .net
 		}
+    protected override void Dispose (bool disposing)
+    {
+      base.Dispose(disposing);
+      if (disposing) { impl.Dispose(); }
+    }
+
+    internal override bool IsBrokenInternal()
+    {
+      return impl.IsBroken();
+    }
 
 		public override PipeTransmissionMode ReadMode {
 			set {

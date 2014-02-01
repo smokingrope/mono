@@ -86,6 +86,9 @@ namespace MonoTests.System.IO.Pipes
         result = reader.ReadLine();
         _log.Info("Receive completed at {0:O}", DateTime.Now);
         _log.Test("Received message 5: '{0}'", result);
+
+        _log.Info("Sleeping for a while so that parent thread can cleanup first");
+        Thread.Sleep(200);
       }}}
     }
   }

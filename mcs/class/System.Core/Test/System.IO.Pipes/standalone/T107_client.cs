@@ -50,6 +50,7 @@ namespace MonoTests.System.IO.Pipes
           writer.WriteLine("Sending last message from pipe client");
           _log.Test("Sending complete");
         }
+        pipeClientOut.WaitForPipeDrain();
       }
     }
   }

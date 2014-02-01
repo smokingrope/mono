@@ -8,6 +8,7 @@ namespace System.IO.Pipes
 	{
 		SafePipeHandle Handle { get; }
 		void WaitForPipeDrain ();
+    bool IsBroken();
 	}
 
 	interface IAnonymousPipeClient : IPipe

@@ -53,6 +53,28 @@ namespace System.IO.Pipes
 
 		public abstract SafePipeHandle Handle { get; }
 
+    public bool IsBroken() {
+      // check whether child handle has POLLERR / POLLHUP
+      // and if so that means reader has closed the pipe
+      MonoIO.PollFlags revents;
+      int pollResult = MonoIO.PollFD(Handle.DisposalHandle.DangerousGetHandle().ToInt32(), 
+                        MonoIO.PollFlags.POLLERR | MonoIO.PollFlags.POLLHUP,
+                        out revents, 0);
+      switch (pollResult) {
+        case -1:
+          // TODO: Better error reporting
+          throw new IOException("Failure during wait for pipe drain");
+
+        case 0:
+          // no POLLERR or POLLHUP means client has not been disposed
+          return false;
+
+        default:
+          // received POLLERR or POLLHUP, client has been disposed
+          return true;
+      }
+      return false;
+    }
 		public virtual void WaitForPipeDrain ()
 		{
       // only writer end has drain handle
@@ -67,7 +89,7 @@ namespace System.IO.Pipes
       do {
         // check whether child handle has POLLERR / POLLHUP
         // and if so that means reader has closed the pipe
-        pollResult = MonoIO.PollFD(Handle.DisposalHandle, 
+        pollResult = MonoIO.PollFD(Handle.DisposalHandle.DangerousGetHandle().ToInt32(), 
                           MonoIO.PollFlags.POLLERR | MonoIO.PollFlags.POLLHUP,
                           out revents, 0);
         switch (pollResult) {
@@ -79,11 +101,11 @@ namespace System.IO.Pipes
             break;
           default:
             // received POLLERR or POLLHUP, client has been disposed
-            throw new ObjectDisposedException("disposalHandle", "reader has closed the pipe");
+            throw new ObjectDisposedException("disposalHandle", "reader has closed the pipe with " + pollResult);
         }
         
         // Check whether read end of pipe has data remaining
-        pollResult = MonoIO.PollFD(Handle.DrainHandle, MonoIO.PollFlags.POLLIN, out revents, 0);
+        pollResult = MonoIO.PollFD(Handle.DrainHandle.DangerousGetHandle().ToInt32(), MonoIO.PollFlags.POLLIN, out revents, 0);
         switch (pollResult) {
           case -1:
             // TODO: Better error reporting
@@ -219,11 +241,15 @@ namespace System.IO.Pipes
 
     public override void Dispose() {
       if (handle != null) {
-        handle.DisposalHandle.DangerousRelease();
-        if (handle.DrainHandle != null) {
+        if (handle.DisposalHandle != null && !handle.DisposalHandle.IsClosed) {
+          handle.DisposalHandle.DangerousRelease();
+        }
+        if (handle.DrainHandle != null && !handle.DrainHandle.IsClosed) {
           handle.DrainHandle.DangerousRelease();
         }
-        handle.DangerousRelease();
+        if (!handle.IsClosed) {
+          handle.DangerousRelease();
+        }
         handle = null;
       }
     }
@@ -372,20 +398,31 @@ namespace System.IO.Pipes
       System.Threading.Thread.Sleep(10);
 
       client_handle.DisposalHandle.DangerousRelease();
+
+      // if server is not writer, we don't need to maintain a reference to main client handle
+      if (this.drain_handle != this.client_handle) {
+        client_handle.DangerousRelease();
+      }
       disposedClientHandle = true;
 		}
 
     public override void Dispose() {
       if (server_handle != null) {
-        server_handle.DisposalHandle.DangerousRelease();
-        server_handle.DangerousRelease();
+        if (server_handle.DisposalHandle != null && !server_handle.DisposalHandle.IsClosed) {
+          server_handle.DisposalHandle.DangerousRelease();
+        }
+        if (!server_handle.IsClosed) {
+          server_handle.DangerousRelease();
+        }
       }
       if (client_handle != null) {
-        if (!disposedClientHandle) {
+        if (!disposedClientHandle && client_handle.DisposalHandle != null && !client_handle.DisposalHandle.IsClosed) {
           client_handle.DisposalHandle.DangerousRelease();
           disposedClientHandle = true;
         }
-        client_handle.DangerousRelease();
+        if (!client_handle.IsClosed) {
+          client_handle.DangerousRelease();
+        }
       }
       drain_handle = null;
       server_handle = null;
@@ -401,7 +438,10 @@ namespace System.IO.Pipes
 		{
 			throw new NotImplementedException ();
 		}
-
+  
+    public bool IsBroken() {
+      return false;
+    }
     public abstract void Dispose();
 
 		public void EnsureTargetFile (string name)
@@ -485,7 +525,7 @@ namespace System.IO.Pipes
 
 			opener = delegate {
 				var fs = new FileStream (name, FileMode.Open, RightsToFileAccess (desiredAccessRights), FileShare.ReadWrite);
-				owner.Stream = fs;
+				//owner.Stream = fs;
 				handle = new SafePipeHandle (fs.Handle, false);
 			};
 		}
@@ -560,7 +600,7 @@ namespace System.IO.Pipes
 			
 			var fs = new FileStream (name, FileMode.Open, RightsToFileAccess (rights), FileShare.ReadWrite);
 			handle = new SafePipeHandle (fs.Handle, false);
-			owner.Stream = fs;
+			//owner.Stream = fs;
 			should_close_handle = true;
 		}
 

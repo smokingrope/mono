@@ -91,6 +91,10 @@ namespace MonoTests.System.IO.Pipes
               excMsg = GetHeader("ERROR") + excMsg;
             }
             Write(excMsg);
+            var disposed = exc as ObjectDisposedException;
+            if (disposed != null) {
+              Write(INDENT + "Object disposed name: " + disposed.ObjectName);
+            }
           }
         }
       }
@@ -119,6 +123,7 @@ namespace MonoTests.System.IO.Pipes
       catch (Exception eError)
       {
         _log.Error(eError, "Test failed with unhandled exception");
+        _log.Error("Exception type: {0}", eError.GetType());
       }
     }
 
@@ -237,11 +242,12 @@ namespace MonoTests.System.IO.Pipes
           throw new InvalidOperationException("Parse failure while trying to get client exe");
         }
 
-        _log.Test("Starting process '{0}'", _clientExe);
+        var args = _parent.FormatArguments(_arguments);
+        _log.Test("Starting process '{0}'", _clientExe, args);
         _process = new Process();
         _process.StartInfo.FileName = _clientExe;
         _process.StartInfo.WorkingDirectory = Environment.CurrentDirectory;
-        _process.StartInfo.Arguments = _parent.FormatArguments(_arguments);
+        _process.StartInfo.Arguments = args;
         _process.StartInfo.UseShellExecute = false;
         _process.Start();
         _log.Test("Done starting process '{0}'", _clientExe);
@@ -324,6 +330,7 @@ namespace MonoTests.System.IO.Pipes
           throw new InvalidOperationException("Incorrect offset while writing");
         }
         _stream.Write(output, 0, output.Length);
+        _stream.Flush();
       }
 
       public void Dispose() {
