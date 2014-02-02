@@ -54,7 +54,20 @@ namespace System.IO.Pipes
 		public abstract SafePipeHandle Handle { get; }
 
     public bool IsBroken() {
-      // check whether child handle has POLLERR / POLLHUP
+      if (IsReader() &&
+          DoesReaderHandleHaveDataToRead()) {
+        // if the reader pipe still has data to read then
+        // we have to pretend the connection is active even
+        // though it's not
+        return false;
+      }
+      if (IsDisposalHandleBroken()) { return true; }
+
+      return false;
+    }
+    public bool IsDisposalHandleBroken()
+    {
+      // check whether disposal handle has POLLERR / POLLHUP
       // and if so that means reader has closed the pipe
       MonoIO.PollFlags revents;
       int pollResult = MonoIO.PollFD(Handle.DisposalHandle.DangerousGetHandle().ToInt32(), 
@@ -75,52 +88,75 @@ namespace System.IO.Pipes
       }
       return false;
     }
+
+    public bool DoesHandleHaveDataToRead(int handle)
+    {
+      MonoIO.PollFlags revents;
+      int pollResult; 
+        
+      // Check whether read end of pipe has data remaining
+      pollResult = MonoIO.PollFD(handle, MonoIO.PollFlags.POLLIN, out revents, 0);
+      switch (pollResult) {
+        case -1:
+          // TODO: Better error reporting
+          throw new IOException("Failure while checking pipe stream");
+
+        case 0:
+          // no POLLIN event means pipe buffer is empty
+          return false;
+
+        default:
+          // received POLLIN event, more data to be read
+          // defer to scheduler before continuing
+          return true;
+      }
+    }
+
+    public bool IsReader() {
+      return Handle.DrainHandle == null;
+    }
+    public bool IsWriter() {
+      return Handle.DrainHandle != null;
+    }
+
+    public bool DoesReaderHandleHaveDataToRead() {
+      // only writer end has drain handle
+      if (IsWriter()) {
+        throw new NotSupportedException("cannot read from writer");
+      }
+      return DoesHandleHaveDataToRead(Handle.DangerousGetHandle().ToInt32());
+    }
+    public bool DoesDrainHandleHaveDataToRead() {
+      if (IsReader()) {
+        throw new NotSupportedException("cannot check drain handle from reader");
+      }
+      return DoesHandleHaveDataToRead(Handle.DrainHandle.DangerousGetHandle().ToInt32());
+    }
+
 		public virtual void WaitForPipeDrain ()
 		{
       // only writer end has drain handle
-      if (Handle.DrainHandle == null ||
-          Handle.DrainHandle.IsInvalid) {
+      if (IsReader()) {
         throw new NotSupportedException("cannot wait from reader");
       }
 
-      bool drained = false;
-      MonoIO.PollFlags revents;
-      int pollResult; 
+      int brokenCount = 0;
       do {
-        // check whether child handle has POLLERR / POLLHUP
-        // and if so that means reader has closed the pipe
-        pollResult = MonoIO.PollFD(Handle.DisposalHandle.DangerousGetHandle().ToInt32(), 
-                          MonoIO.PollFlags.POLLERR | MonoIO.PollFlags.POLLHUP,
-                          out revents, 0);
-        switch (pollResult) {
-          case -1:
-            // TODO: Better error reporting
-            throw new IOException("Failure during wait for pipe drain");
-          case 0:
-            // no POLLERR or POLLHUP means client has not been disposed
-            break;
-          default:
-            // received POLLERR or POLLHUP, client has been disposed
-            throw new ObjectDisposedException("disposalHandle", "reader has closed the pipe with " + pollResult);
+        // if pipe is broken and pipe is drained, we prefer to return the 'pipe drain' event
+        // as opposed to pipe broken event, so we require a double check of the drain handle
+        // before throwing a disposed exception
+        if (IsBroken() && ++brokenCount > 1) {
+          throw new ObjectDisposedException("disposalHandle", "reader has closed the pipe");
+        } else {
+          brokenCount = 0;
         }
-        
-        // Check whether read end of pipe has data remaining
-        pollResult = MonoIO.PollFD(Handle.DrainHandle.DangerousGetHandle().ToInt32(), MonoIO.PollFlags.POLLIN, out revents, 0);
-        switch (pollResult) {
-          case -1:
-            // TODO: Better error reporting
-            throw new IOException("Failure during wait for pipe drain");
-          case 0:
-            // no POLLIN event means pipe buffer is empty
-            drained = true;
-            break;
-          default:
-            // received POLLIN event, more data to be read
-            // defer to scheduler before continuing
-            System.Threading.Thread.Sleep(0);
-            break;
-        }
-      } while (!drained);
+       
+        if (!DoesDrainHandleHaveDataToRead()) { return; }
+          
+        // received POLLIN event, more data to be read
+        // defer to scheduler before continuing
+        System.Threading.Thread.Sleep(0);
+      } while (true);
 		}
 
     public abstract void Dispose();
