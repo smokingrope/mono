@@ -1,0 +1,48 @@
+[INFO][T111_Server_Main]Test T111_Server_Main started at 2014-02-02T19:40:34.7425730-05:00
+[INFO][T111_Server_Main]Working directory /home/smokingrope/mono/mcs/class/System.Core/Test/System.IO.Pipes/standalone
+[TEST][T111_Server_Main]Starting testing thread
+[INFO][T111_Server_Main]Test runtime of 00:00:00.0008646
+[TEST][T111_Server_Main]Creating anonymous pipe server stream
+[INFO][T111_Server_Main]Generated argument list:
+    /inHandle:5,3 /outHandle:10,8,9
+[TEST][T111_Server_Main]Starting process 'test_system_io_pipes_standalone_T111_client'
+[TEST][T111_Server_Main]Done starting process 'test_system_io_pipes_standalone_T111_client'
+[INFO][T111_Server_Client]Test T111_Server_Client started at 2014-02-02T19:40:34.8034690-05:00
+[INFO][T111_Server_Client]Working directory /home/smokingrope/mono/mcs/class/System.Core/Test/System.IO.Pipes/standalone
+[TEST][T111_Server_Client]Starting testing thread
+[INFO][T111_Server_Client]Test runtime of 00:00:00.0009269
+[TEST][T111_Server_Client]Setting up streams
+[INFO][T111_Server_Client]Received in handle 5,3
+[INFO][T111_Server_Client]Received out handle 10,8,9
+[TEST][T111_Server_Client]Finished Creating Client
+[TEST][T111_Server_Client]Begin Synchronization with server
+[TEST][T111_Server_Client]Awaiting response from server
+[INFO][T111_Server_Main]Test runtime of 00:00:01.0017378
+[INFO][T111_Server_Client]Test runtime of 00:00:01.0014550
+[INFO][T111_Server_Main]Test runtime of 00:00:02.0028922
+[TEST][T111_Server_Main]Setting up stream tools
+[TEST][T111_Server_Main]Begin Synchronization with client
+[TEST][T111_Server_Main]Awaiting response from client
+[TEST][T111_Server_Main]Response received 'PIPE CLIENT STARTED'
+[TEST][T111_Server_Main]Sleeping for 1 second just to allow client to finish synchronization
+[TEST][T111_Server_Client]Response received 'PIPE SERVER STARTED'
+[TEST][T111_Server_Client]Synchronization with server completed with message 'PIPE SERVER STARTED'
+[TEST][T111_Server_Client]Sleeping for 2 seconds, server should be able to exit by the time this finishes
+[TEST][T111_Server_Main]Synchronization with client completed with message 'PIPE CLIENT STARTED'
+[TEST][T111_Server_Main]Finished disposing pipe tools
+[TEST][T111_Server_Main]Finished disposing pipe streams
+[TEST][T111_Server_Main]Awaiting pipe client exit
+[TEST][T111_Server_Main]Awaiting process 'test_system_io_pipes_standalone_T111_client' exit
+[INFO][T111_Server_Client]Test runtime of 00:00:02.0025475
+[INFO][T111_Server_Main]Test runtime of 00:00:03.0041435
+[INFO][T111_Server_Client]Test runtime of 00:00:03.0028030
+[INFO][T111_Server_Main]Test runtime of 00:00:04.0043838
+[TEST][T111_Server_Client]Attempting to send message on broken pipe
+[TEST][T111_Server_Client]Got the expected 'pipe broken' exception
+[TEST][T111_Server_Client]Finished disposing pipe tools
+[TEST][T111_Server_Client]Finished disposing pipe streams
+[TEST][T111_Server_Client]Pipe client exiting
+[INFO][T111_Server_Client]Test Succeeded in 00:00:04.0031767
+[TEST][T111_Server_Main]Done awaiting process 'test_system_io_pipes_standalone_T111_client' exit
+[TEST][T111_Server_Main]Pipe client exited
+[INFO][T111_Server_Main]Test Succeeded in 00:00:05.0049132

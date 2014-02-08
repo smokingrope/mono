@@ -988,13 +988,34 @@ gboolean CreateProcess (const gunichar2 *appname, const gunichar2 *cmdline,
 		dup2 (out_fd, 1);
 		dup2 (err_fd, 2);
 
-		if (inherit_handles != TRUE) {
-			/* FIXME: do something here - how about close the handles? */
-      /* Close all file descriptors */
-      //for (i = getdtablesize () - 1; i > 2; i--) {
-      //  close (i);
-      //}
-		}
+    // search all potential handle id's closing those that are not 
+    // inheritable
+    for (i = getdtablesize() - 1; i > 2; i--) {
+      struct _WapiHandle_file *fileDetail = NULL;
+      gpointer searchHandle = GINT_TO_POINTER(i);
+
+      if (inherit_handles == TRUE) {
+        if (FALSE == _wapi_lookup_handle (searchHandle, WAPI_HANDLE_FILE, (gpointer*)&fileDetail))
+        {
+          if (FALSE == _wapi_lookup_handle (searchHandle, WAPI_HANDLE_PIPE, (gpointer*)&fileDetail))
+          {
+            if (FALSE == _wapi_lookup_handle (searchHandle, WAPI_HANDLE_CONSOLE, (gpointer*)&fileDetail))
+            {
+              fileDetail = NULL;
+            }
+          }
+        }
+      }
+
+      // if security attributes are undefined for the handle 
+      // or the handle is not flagged as inheritable, then close it
+      if (NULL == fileDetail  || 
+          NULL == fileDetail->security_attributes ||
+          FALSE == fileDetail->security_attributes->bInheritHandle)
+      {
+        close(i);
+      }
+    }
 		
 #ifdef DEBUG_ENABLED
 		DEBUG ("%s: exec()ing [%s] in dir [%s]", __func__, cmd,

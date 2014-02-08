@@ -21,8 +21,12 @@ typedef struct _WapiSecurityAttributes WapiSecurityAttributes;
 
 struct _WapiSecurityAttributes 
 {
+  // assuming this will either be the length of lpSecurityDescriptor 
+  // array in elements or the raw size in bytes
 	guint32 nLength;
+  // store an array of dynamic security metadata?
 	gpointer lpSecurityDescriptor;
+  // needed for anonymous pipes
 	gboolean bInheritHandle;
 };
 
@@ -169,8 +173,6 @@ extern gpointer CreateFile(const gunichar2 *name, guint32 fileaccess,
 			   guint32 attrs, gpointer tmplate);
 extern gboolean DeleteFile(const gunichar2 *name);
 extern gpointer GetStdHandle(WapiStdHandle stdhandle);
-extern gint32 ves_icall_System_IO_MonoIO_PollFD(gint32 fd, gint16 events, gint16 *revents, gint32 timeout);
-extern gpointer ves_icall_System_IO_MonoIO_GetPipeHandle(int fd, int flags, gint32 *error);
 extern gboolean ReadFile(gpointer handle, gpointer buffer, guint32 numbytes,
 			 guint32 *bytesread, WapiOverlapped *overlapped);
 extern gboolean WriteFile(gpointer handle, gconstpointer buffer,
@@ -210,8 +212,11 @@ extern gboolean GetFileAttributesEx (const gunichar2 *name,
 extern gboolean SetFileAttributes (const gunichar2 *name, guint32 attrs);
 extern guint32 GetCurrentDirectory (guint32 length, gunichar2 *buffer);
 extern gboolean SetCurrentDirectory (const gunichar2 *path);
-extern gboolean CreatePipe (gpointer *readpipe, gpointer *writepipe,
-			    WapiSecurityAttributes *security, guint32 size);
+extern gboolean CreatePipe (
+  gpointer *readpipe, WapiSecurityAttributes *readSecurity, 
+  gpointer *writepipe, WapiSecurityAttributes *writeSecurity);
+extern gpointer GetPipeHandle(int fd, int flags, gint32 *error, gboolean inherit);
+
 extern guint32 GetTempPath (guint32 len, gunichar2 *buf);
 extern gint32 GetLogicalDriveStrings (guint32 len, gunichar2 *buf);
 extern gboolean GetDiskFreeSpaceEx(const gunichar2 *path_name, WapiULargeInteger *free_bytes_avail,

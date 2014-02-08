@@ -460,9 +460,9 @@ namespace System.IO
     };
 
     [MethodImplAttribute (MethodImplOptions.InternalCall)]
-    public extern static IntPtr GetPipeHandle(int fd, GetPipeHandleFlag flags, out MonoIOError error);
+    public extern static IntPtr GetPipeHandle(int fd, GetPipeHandleFlag flags, out MonoIOError error, bool inherit);
 		[MethodImplAttribute (MethodImplOptions.InternalCall)]
-		public extern static bool CreatePipe (out IntPtr read_handle, out IntPtr write_handle);
+		public extern static bool CreatePipe (out IntPtr read_handle, bool inheritReadHandle, out IntPtr write_handle, bool inheritWriteHandle);
 
 		[MethodImplAttribute (MethodImplOptions.InternalCall)]
 		public extern static bool DuplicateHandle (IntPtr source_process_handle, IntPtr source_handle,

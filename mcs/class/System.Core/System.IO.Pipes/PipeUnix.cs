@@ -218,7 +218,8 @@ namespace System.IO.Pipes
           default:
             throw new InvalidOperationException ("this should never happen");
         }
-        fdHandles[i] = MonoIO.GetPipeHandle(fds[i], direction, out error);
+        // TODO: It's still kinda unclear how inheritance should be setup here
+        fdHandles[i] = MonoIO.GetPipeHandle(fds[i], direction, out error, true);
 
         if (error != MonoIOError.ERROR_SUCCESS) {
           throw new IOException ("Unable to load pipe with error code " + error);
@@ -301,16 +302,7 @@ namespace System.IO.Pipes
       
       IntPtr[] l_comHandle = new IntPtr[2];
       IntPtr[] l_disposeHandle = new IntPtr[2];
-
-      // create pipes for tracking dispose
-      if (!MonoIO.CreatePipe(out l_disposeHandle[0], out l_disposeHandle[1])) {
-        throw new IOException ("Error creating diposable anonymous pipe");
-      }
-      
-      // create real pipes
-      if (!MonoIO.CreatePipe (out l_comHandle[0], out l_comHandle[1])) {
-        throw new IOException ("Error creating anonymous pipe");
-      }
+      bool inheritRead, inheritWrite;
 
       // select pipe mode
       int sidx, cidx;
@@ -319,13 +311,25 @@ namespace System.IO.Pipes
         case PipeDirection.In:
           sidx = 0; cidx= 1;
           clientNeedsDrain = true;
+          inheritRead = false;
           break;
         case PipeDirection.Out:
           sidx = 1; cidx = 0;
           clientNeedsDrain = false;
+          inheritRead = true;
           break;
         default:
           throw new NotSupportedException("pipe direction " + owner.direction);
+      }
+
+      // create pipes for tracking dispose
+      if (!MonoIO.CreatePipe(out l_disposeHandle[0], inheritability == HandleInheritability.Inheritable && inheritRead, out l_disposeHandle[1], inheritability == HandleInheritability.Inheritable && !inheritRead)) {
+        throw new IOException ("Error creating diposable anonymous pipe");
+      }
+      
+      // create real pipes
+      if (!MonoIO.CreatePipe (out l_comHandle[0], inheritability == HandleInheritability.Inheritable && (inheritRead || clientNeedsDrain), out l_comHandle[1], inheritability == HandleInheritability.Inheritable && (!inheritRead || clientNeedsDrain))) {
+        throw new IOException ("Error creating anonymous pipe");
       }
 
       this.server_handle = new SafePipeHandle (l_comHandle[sidx], true);

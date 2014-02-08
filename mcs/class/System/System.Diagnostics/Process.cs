@@ -979,8 +979,7 @@ namespace System.Diagnostics {
 					int DUPLICATE_SAME_ACCESS = 0x00000002;
 					IntPtr stdin_wr_tmp;
 
-					ret = MonoIO.CreatePipe (out stdin_rd,
-									 out stdin_wr_tmp);
+					ret = MonoIO.CreatePipe (out stdin_rd, false, out stdin_wr_tmp, false);
 					if (ret) {
 						ret = MonoIO.DuplicateHandle (Process.GetCurrentProcess ().Handle, stdin_wr_tmp,
 						Process.GetCurrentProcess ().Handle, out stdin_wr, 0, 0, DUPLICATE_SAME_ACCESS);
@@ -989,8 +988,7 @@ namespace System.Diagnostics {
 				}
 				else
 				{
-					ret = MonoIO.CreatePipe (out stdin_rd,
-									 out stdin_wr);
+					ret = MonoIO.CreatePipe (out stdin_rd, false, out stdin_wr, false);
 				}
 				if (ret == false) {
 					throw new IOException ("Error creating standard input pipe");
@@ -1010,8 +1008,7 @@ namespace System.Diagnostics {
 					IntPtr out_rd_tmp;
 					int DUPLICATE_SAME_ACCESS = 0x00000002;
 
-					ret = MonoIO.CreatePipe (out out_rd_tmp,
-									 out stdout_wr);
+					ret = MonoIO.CreatePipe (out out_rd_tmp, false, out stdout_wr, false);
 					if (ret) {
 						MonoIO.DuplicateHandle (Process.GetCurrentProcess ().Handle, out_rd_tmp,
 						Process.GetCurrentProcess ().Handle, out out_rd, 0, 0, DUPLICATE_SAME_ACCESS);
@@ -1019,8 +1016,7 @@ namespace System.Diagnostics {
 					}
 				}
 				else {
-					ret = MonoIO.CreatePipe (out out_rd,
-									 out stdout_wr);
+					ret = MonoIO.CreatePipe (out out_rd, false, out stdout_wr, false);
 				}
 
 				process.stdout_rd = out_rd;
@@ -1043,8 +1039,7 @@ namespace System.Diagnostics {
 					IntPtr err_rd_tmp;
 					int DUPLICATE_SAME_ACCESS = 0x00000002;
 
-					ret = MonoIO.CreatePipe (out err_rd_tmp,
-									 out stderr_wr);
+					ret = MonoIO.CreatePipe (out err_rd_tmp, false, out stderr_wr, false);
 					if (ret) {
 						MonoIO.DuplicateHandle (Process.GetCurrentProcess ().Handle, err_rd_tmp,
 						Process.GetCurrentProcess ().Handle, out err_rd, 0, 0, DUPLICATE_SAME_ACCESS);
@@ -1052,8 +1047,7 @@ namespace System.Diagnostics {
 					}
 				}
 				else {
-					ret = MonoIO.CreatePipe (out err_rd,
-									 out stderr_wr);
+					ret = MonoIO.CreatePipe (out err_rd, false, out stderr_wr, false);
 				}
 
 				process.stderr_rd = err_rd;

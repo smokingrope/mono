@@ -32,8 +32,8 @@ namespace MonoTests.System.IO.Pipes
       }
 
       _log.Test("Creating anonymous pipe server stream");
-      using (AnonymousPipeServerStream pipeServer = new AnonymousPipeServerStream(PipeDirection.Out))
-      using (AnonymousPipeServerStream syncServer = new AnonymousPipeServerStream(PipeDirection.In))
+      using (AnonymousPipeServerStream pipeServer = new AnonymousPipeServerStream(PipeDirection.Out, HandleInheritability.Inheritable))
+      using (AnonymousPipeServerStream syncServer = new AnonymousPipeServerStream(PipeDirection.In, HandleInheritability.Inheritable))
       {
         pipeClient.AddArgument("/inHandle:", pipeServer.GetClientHandleAsString());
         pipeClient.AddArgument("/outHandle:", syncServer.GetClientHandleAsString());

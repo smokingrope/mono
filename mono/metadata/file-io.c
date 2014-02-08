@@ -32,6 +32,7 @@
 #include <mono/metadata/appdomain.h>
 #include <mono/metadata/marshal.h>
 #include <mono/utils/strenc.h>
+#include <mono/utils/mono-poll.h>
 #include <utils/mono-io-portability.h>
 
 #undef DEBUG
@@ -1037,25 +1038,78 @@ ves_icall_System_IO_MonoIO_get_ConsoleError ()
 }
 
 MonoBoolean
-ves_icall_System_IO_MonoIO_CreatePipe (HANDLE *read_handle,
-				       HANDLE *write_handle)
+ves_icall_System_IO_MonoIO_CreatePipe (
+  HANDLE *read_handle, gboolean inheritReadHandle,
+  HANDLE *write_handle, gboolean inheritWriteHandle)
 {
-	SECURITY_ATTRIBUTES attr;
+	SECURITY_ATTRIBUTES readAttr = {0}, writeAttr = {0};
 	gboolean ret;
 	
 	MONO_ARCH_SAVE_REGS;
 
-	attr.nLength=sizeof(SECURITY_ATTRIBUTES);
-	attr.bInheritHandle=TRUE;
-	attr.lpSecurityDescriptor=NULL;
+	readAttr.bInheritHandle=inheritReadHandle;
+	writeAttr.bInheritHandle=inheritWriteHandle;
 	
-	ret=CreatePipe (read_handle, write_handle, &attr, 0);
+	ret=CreatePipe (read_handle, &readAttr, write_handle, &writeAttr);
 	if(ret==FALSE) {
 		/* FIXME: throw an exception? */
 		return(FALSE);
 	}
 	
 	return(TRUE);
+}
+
+/**
+ * PollFD
+ * @fd: specifies the file descriptor to poll
+ * @events: bitmask of events to poll for
+ * @revents: bitmask of events found during polling
+ * @timeout: duration in milliseconds to poll, -1 for inifinty, 0 for immediate return
+ *
+ * Polls the file descriptor for specified events
+ *
+ * Return value: 1 if any of the polled events are found, 0 if timeout expired, -1 for error
+ */
+gint32 ves_icall_System_IO_MonoIO_PollFD(gint32 fd, gint16 events, gint16 *revents, gint32 timeout)
+{
+  int result;
+  mono_pollfd poll;
+
+  poll.fd = fd;
+  poll.events = events;
+
+#ifdef  DEBUG
+  g_message("%s: pollfd %d with flags %d", __func__, fd, events);
+#endif
+
+  result = mono_poll (&poll, 1, timeout);
+  *revents = poll.revents;
+
+#ifdef DEBUG
+  g_message("%s: pollfd result %d with flags %d", __func__, result, *revents);
+#endif
+
+  if (result == -1) {
+    SetLastError (_wapi_get_win32_file_error (errno));
+  }
+
+  return result;
+}
+
+/**
+ * GetPipeHandle:
+ * @fd: specifies the file descriptor of the pipe
+ * @flags: specifies GENERIC_READ / GENERIC_WRITE depending on pipe direction, will generate error if incorrect
+ *
+ * Returns a handle for (inherited / created external to wapi) pipe file descriptor. If
+ * handle wasn't initialized with WAPI then initialize it. If it's been initialized in WAPI
+ * then it reuses the existing handle.
+ *
+ * Return value: the handle, or %INVALID_HANDLE_VALUE on error
+ */
+gpointer ves_icall_System_IO_MonoIO_GetPipeHandle(int fd, int flags, gint32 *error, gboolean inherit)
+{
+  return GetPipeHandle(fd, flags, error, inherit);
 }
 
 MonoBoolean ves_icall_System_IO_MonoIO_DuplicateHandle (HANDLE source_process_handle, 

@@ -54,7 +54,7 @@ convert_from_flags(int flags)
 	return(fileaccess);
 }
 
-gpointer _wapi_pipehandle_initialize (int fd, int handleFlags, gint32 *error)
+gpointer _wapi_pipehandle_initialize (int fd, int handleFlags, gint32 *error, gboolean inherit)
 {
   const int fdStringLen = 20;
   gchar fdString[fdStringLen];
@@ -122,8 +122,12 @@ gpointer _wapi_pipehandle_initialize (int fd, int handleFlags, gint32 *error)
   g_sprintf(fdString, "%d", fd);
   
 	file_handle.filename = g_strconcat("<PIPE:", fdString, ">");
-	/* TODO: no idea what implications of this field is, just copied from create_stdhandle */
-	file_handle.security_attributes=0;
+  if (inherit) {
+    file_handle.security_attributes = g_new0(WapiSecurityAttributes, 1);
+    file_handle.security_attributes->bInheritHandle = inherit;
+  } else {
+	  file_handle.security_attributes=NULL;
+  }
 
 	/* TODO: no idea what implications of this field is, just copied from create_stdhandle */
 	file_handle.sharemode=0;

@@ -31,7 +31,7 @@ extern void _wapi_file_details (gpointer handle_info);
 extern void _wapi_console_details (gpointer handle_info);
 extern void _wapi_pipe_details (gpointer handle_info);
 extern gpointer _wapi_stdhandle_create (int fd, const gchar *name);
-extern gpointer _wapi_pipehandle_initialize (int fd, int flags, gint32 *error);
+extern gpointer _wapi_pipehandle_initialize (int fd, int flags, gint32 *error, gboolean inherit);
 
 /* Currently used for both FILE, CONSOLE and PIPE handle types.  This may
  * have to change in future.
@@ -41,7 +41,7 @@ struct _WapiHandle_file
 	gchar *filename;
 	struct _WapiFileShare *share_info;	/* Pointer into shared mem */
 	int fd;
-	guint32 security_attributes;
+  struct _WapiSecurityAttributes *security_attributes;
 	guint32 fileaccess;
 	guint32 sharemode;
 	guint32 attrs;

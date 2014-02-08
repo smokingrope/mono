@@ -325,6 +325,24 @@ static void _wapi_set_last_path_error_from_errno (const gchar *dir,
 	}
 }
 
+static void security_attributes_free(WapiSecurityAttributes *security)
+{
+  g_free(security);
+}
+static WapiSecurityAttributes *security_attributes_shallowCopy(WapiSecurityAttributes *security)
+{
+  WapiSecurityAttributes *secAttr = NULL;
+  if (security != NULL && (
+      security->bInheritHandle == TRUE ||
+      (security->nLength != 0 && security->lpSecurityDescriptor != NULL))) {
+    secAttr = g_new0(WapiSecurityAttributes, 1);
+    secAttr->nLength = security->nLength;
+    secAttr->lpSecurityDescriptor = security->lpSecurityDescriptor;
+    secAttr->bInheritHandle = security->bInheritHandle;
+  }
+  return secAttr;
+}
+
 /* Handle ops.
  */
 static void file_close (gpointer handle, gpointer data)
@@ -342,6 +360,10 @@ static void file_close (gpointer handle, gpointer data)
 	
 	if (file_handle->share_info)
 		_wapi_handle_share_release (file_handle->share_info);
+
+  if (file_handle->security_attributes) {
+    security_attributes_free(file_handle->security_attributes);
+  }
 	
 	close (fd);
 }
@@ -2142,89 +2164,6 @@ gpointer GetStdHandle(WapiStdHandle stdhandle)
 }
 
 /**
- * PollFD
- * @fd: specifies the file descriptor to poll
- * @events: bitmask of events to poll for
- * @revents: bitmask of events found during polling
- * @timeout: duration in milliseconds to poll, -1 for inifinty, 0 for immediate return
- *
- * Polls the file descriptor for specified events
- *
- * Return value: 1 if any of the polled events are found, 0 if timeout expired, -1 for error
- */
-gint32 ves_icall_System_IO_MonoIO_PollFD(gint32 fd, gint16 events, gint16 *revents, gint32 timeout)
-{
-  mono_pollfd poll;
-  poll.fd = fd;
-  poll.events = events;
-		
-  DEBUG("%s: pollfd %d with flags %d", __func__, fd, events);
-
-  int result = mono_poll (&poll, 1, timeout);
-  *revents = poll.revents;
-
-  DEBUG("%s: pollfd result %d with flags %d", __func__, result, *revents);
-
-  if (result == -1) {
-    SetLastError (_wapi_get_win32_file_error (errno));
-  }
-
-  return result;
-}
-
-/**
- * GetPipeHandle:
- * @fd: specifies the file descriptor of the pipe
- * @flags: specifies GENERIC_READ / GENERIC_WRITE depending on pipe direction, will generate error if incorrect
- *
- * Returns a handle for (inherited / created external to wapi) pipe file descriptor. If 
- * handle wasn't initialized with WAPI then initialize it. If it's been initialized in WAPI
- * then it reuses the existing handle.
- *
- * Return value: the handle, or %INVALID_HANDLE_VALUE on error
- */
-gpointer ves_icall_System_IO_MonoIO_GetPipeHandle(int fd, int flags, gint32 *error)
-{
-	struct _WapiHandle_file *file_handle;
-	int thr_ret;
-	gboolean ok;
-  gpointer handle;
-
-  *error = ERROR_SUCCESS;
-
-  // TODO: Remove, copied from GetStdHandle
-	handle = GINT_TO_POINTER (fd);
-
-  DEBUG("%s: initialize handle %d with flags %d", __func__, fd, flags);
-  DEBUG("%s: GENERIC_READ=%d, GENERIC_WRITE=%d", __func__, GENERIC_READ, GENERIC_WRITE);
-
-  // Conciously reusing same mutex from GetStdHandle() for GetPipeHandle() 
-  // - is there really any benefit to making a new one?
-	pthread_cleanup_push ((void(*)(void *))mono_mutex_unlock_in_cleanup,
-			      (void *)&stdhandle_mutex);
-	thr_ret = mono_mutex_lock (&stdhandle_mutex);
-	g_assert (thr_ret == 0);
-
-	ok = _wapi_lookup_handle (handle, WAPI_HANDLE_PIPE,
-				  (gpointer *)&file_handle);
-	if (ok == FALSE) {
-		/* assume the pipe handle provided was setup somehow outside of mono,
-       and we try to initialize it in WAPI layer, let WAPI do checks
-       and generate error if the handle isn't what caller says it is */
-		handle = _wapi_pipehandle_initialize (fd, flags, error);
-	} else {
-		/* Add a reference to this handle */
-		_wapi_handle_ref (handle);
-	}
-	
-	thr_ret = mono_mutex_unlock (&stdhandle_mutex);
-	g_assert (thr_ret == 0);
-	pthread_cleanup_pop (0);
-	
-	return(handle);
-}
-
-/**
  * ReadFile:
  * @handle: The file handle to read from.  The handle must have
  * %GENERIC_READ access.
@@ -3373,8 +3312,9 @@ extern gboolean SetCurrentDirectory (const gunichar2 *path)
 	return result;
 }
 
-gboolean CreatePipe (gpointer *readpipe, gpointer *writepipe,
-		     WapiSecurityAttributes *security G_GNUC_UNUSED, guint32 size)
+gboolean CreatePipe (
+  gpointer *readpipe, WapiSecurityAttributes *readSecurity, 
+  gpointer *writepipe, WapiSecurityAttributes *writeSecurity)
 {
 	struct _WapiHandle_file pipe_read_handle = {0};
 	struct _WapiHandle_file pipe_write_handle = {0};
@@ -3407,11 +3347,13 @@ gboolean CreatePipe (gpointer *readpipe, gpointer *writepipe,
 		
 		return(FALSE);
 	}
+
 	
 	/* filedes[0] is open for reading, filedes[1] for writing */
 
 	pipe_read_handle.fd = filedes [0];
 	pipe_read_handle.fileaccess = GENERIC_READ;
+  pipe_read_handle.security_attributes = security_attributes_shallowCopy(readSecurity);
 	read_handle = _wapi_handle_new_fd (WAPI_HANDLE_PIPE, filedes[0],
 					   &pipe_read_handle);
 	if (read_handle == _WAPI_HANDLE_INVALID) {
@@ -3425,6 +3367,7 @@ gboolean CreatePipe (gpointer *readpipe, gpointer *writepipe,
 	
 	pipe_write_handle.fd = filedes [1];
 	pipe_write_handle.fileaccess = GENERIC_WRITE;
+  pipe_write_handle.security_attributes = security_attributes_shallowCopy(writeSecurity);
 	write_handle = _wapi_handle_new_fd (WAPI_HANDLE_PIPE, filedes[1],
 					    &pipe_write_handle);
 	if (write_handle == _WAPI_HANDLE_INVALID) {
@@ -3445,6 +3388,56 @@ gboolean CreatePipe (gpointer *readpipe, gpointer *writepipe,
 		   __func__, read_handle, write_handle);
 
 	return(TRUE);
+}
+
+/**
+ * GetPipeHandle:
+ * @fd: specifies the file descriptor of the pipe
+ * @flags: specifies GENERIC_READ / GENERIC_WRITE depending on pipe direction, will generate error if incorrect
+ *
+ * Returns a handle for (inherited / created external to wapi) pipe file descriptor. If
+ * handle wasn't initialized with WAPI then initialize it. If it's been initialized in WAPI
+ * then it reuses the existing handle.
+ *
+ * Return value: the handle, or %INVALID_HANDLE_VALUE on error
+ */
+gpointer GetPipeHandle(int fd, int flags, gint32 *error, gboolean inherit)
+{
+  struct _WapiHandle_file *file_handle;
+  int thr_ret;
+  gboolean ok;
+  gpointer handle;
+
+  *error = ERROR_SUCCESS;
+  handle = GINT_TO_POINTER (fd);
+
+  DEBUG("%s: initialize handle %d with flags %d", __func__, fd, flags);
+  DEBUG("%s: GENERIC_READ=%d, GENERIC_WRITE=%d", __func__, GENERIC_READ, GENERIC_WRITE);
+
+  // Conciously reusing same mutex from GetStdHandle() for GetPipeHandle()
+  // - is there really any benefit to making a new one?
+  pthread_cleanup_push ((void(*)(void *))mono_mutex_unlock_in_cleanup,
+            (void *)&stdhandle_mutex);
+  thr_ret = mono_mutex_lock (&stdhandle_mutex);
+  g_assert (thr_ret == 0);
+
+  ok = _wapi_lookup_handle (handle, WAPI_HANDLE_PIPE,
+          (gpointer *)&file_handle);
+  if (ok == FALSE) {
+    /* assume the pipe handle provided was setup somehow outside of mono,
+       and we try to initialize it in WAPI layer, let WAPI do checks
+       and generate error if the handle isn't what caller says it is */
+    handle = _wapi_pipehandle_initialize (fd, flags, error, inherit);
+  } else {
+    /* Add a reference to this handle */
+    _wapi_handle_ref (handle);
+  }
+
+  thr_ret = mono_mutex_unlock (&stdhandle_mutex);
+  g_assert (thr_ret == 0);
+  pthread_cleanup_pop (0);
+
+  return(handle);
 }
 
 guint32 GetTempPath (guint32 len, gunichar2 *buf)
