@@ -20,6 +20,7 @@ namespace MonoTests.System.IO.Pipes
 
     protected override void DoTest(string[] arguments)
     {
+      InheritedContextSwitchTool();
       string handle = null;
       foreach (string arg in arguments)
       {

@@ -24,6 +24,7 @@ namespace MonoTests.System.IO.Pipes
 
     protected override void DoTest(string[] arguments)
     {
+      CreatedContextSwitchTool();
       ProcessLauncher pipeClient = new ProcessLauncher(this, "/client:", arguments);
       if (pipeClient.ParseFailure) {
         _log.Error("Usage: /client:<clientexe>");
@@ -35,12 +36,16 @@ namespace MonoTests.System.IO.Pipes
       using (AnonymousPipeServerStream pipeServer = new AnonymousPipeServerStream(PipeDirection.Out, HandleInheritability.Inheritable))
       using (AnonymousPipeServerStream syncServer = new AnonymousPipeServerStream(PipeDirection.In, HandleInheritability.Inheritable))
       {
+	_log.Test("Launching pipe client");
         pipeClient.AddArgument("/inHandle:", pipeServer.GetClientHandleAsString());
         pipeClient.AddArgument("/outHandle:", syncServer.GetClientHandleAsString());
         pipeClient.Launch();
-
+	
+	_log.Test("Disposing local copy of client handles");
         pipeServer.DisposeLocalCopyOfClientHandle();
         syncServer.DisposeLocalCopyOfClientHandle();
+
+        ContextSwitch();
 
         _log.Test("Setting up stream tools");
         using (PipeWriter writer = new PipeWriter(pipeServer)) 
@@ -49,6 +54,7 @@ namespace MonoTests.System.IO.Pipes
           _log.Test("Begin Synchronization with client");
           writer.WriteLine("PIPE SERVER STARTED");
           _log.Test("Awaiting response from client");
+          ContextSwitch();
           string result = reader.ReadLine();
           _log.Test("Response received '{0}'", result);
 
@@ -57,9 +63,8 @@ namespace MonoTests.System.IO.Pipes
             return;
           }
           _log.Test("Synchronization with client completed");
-  
+          ContextNatural();
 
-          Thread.Sleep(2000);
           _log.Test("Sending message 1");
           writer.WriteLine("Message 1 sent from anonymous pipe server stream");
           _log.Info("Wait begins at timestamp {0:O}", DateTime.Now);
@@ -81,6 +86,8 @@ namespace MonoTests.System.IO.Pipes
           _log.Info("Wait begins at timestamp {0:O}", DateTime.Now);
           pipeServer.WaitForPipeDrain();
           _log.Test("Disposing stream writer");
+       
+          ContextEnroll();
         }
 
         _log.Test("Message sending completed");
@@ -88,6 +95,7 @@ namespace MonoTests.System.IO.Pipes
       _log.Test("Disposed anonymous pipe server stream");
 
       _log.Test("Awaiting pipe client exit");
+      ContextSwitch();
       pipeClient.WaitForExit();
       _log.Test("Pipe client exited");
     }

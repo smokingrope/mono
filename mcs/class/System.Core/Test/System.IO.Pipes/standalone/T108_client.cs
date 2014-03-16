@@ -21,6 +21,7 @@ namespace MonoTests.System.IO.Pipes
 
     protected override void DoTest(string[] arguments)
     {
+      InheritedContextSwitchTool();
       string inHandle = null;
       foreach (string arg in arguments)
       {
@@ -40,11 +41,16 @@ namespace MonoTests.System.IO.Pipes
         _log.Test("Created in client");
         using (PipeReader reader = new PipeReader(pipeClientIn))
         {
+          ContextSwitch();
+          ContextNatural();
+
           _log.Test("Reading first line from server");
           string result = reader.ReadLine();
           _log.Test("Received first line from server '{0}'", result);
           result = reader.ReadLine();
           _log.Test("Received second line from server '{0}'", result);
+ 
+          ContextEnroll();
         }
         _log.Test("Disposed stream readaer");
       }

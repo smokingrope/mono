@@ -1,33 +1,46 @@
-[INFO][T107_Server_Main]Test T107_Server_Main started at 2014-02-01T13:12:01.1892320-05:00
+[INFO][T107_Server_Main]Test T107_Server_Main started at 2014-03-15T22:06:49.7627690-04:00
 [INFO][T107_Server_Main]Working directory /home/smokingrope/mono/mcs/class/System.Core/Test/System.IO.Pipes/standalone
 [TEST][T107_Server_Main]Starting testing thread
-[INFO][T107_Server_Main]Test runtime of 00:00:00.0009177
+[INFO][T107_Server_Main]Test runtime of 00:00:00.0008369
+[INFO][T107_Server_Main]Test is expecting fresh context switching tool
+[INFO][T107_Server_Main]Test found fresh context switching tool
+[INFO][T107_Server_Main]Enrolling in cooperative multi-tasking
+[INFO][T107_Server_Main]Enrollment complete
 [TEST][T107_Server_Main]Creating anonymous pipe server stream
+[TEST][T107_Server_Main]Launching pipe client
 [INFO][T107_Server_Main]Generated argument list:
-    /outHandle:6,4,5
+[INFO][T107_Server_Main]    /contextSwitch:408d7bf0c1944eb694dcccd325e65f78 /outHandle:7,5,6
 [TEST][T107_Server_Main]Starting process 'test_system_io_pipes_standalone_T107_client'
 [TEST][T107_Server_Main]Done starting process 'test_system_io_pipes_standalone_T107_client'
-[TEST][T107_Server_Main]Sleeping for a few seconds so the client can maybe catch up?
-[INFO][T107_Client]Test T107_Client started at 2014-02-01T13:12:01.2379170-05:00
+[TEST][T107_Server_Main]Disposing local copy of client handles
+[INFO][T107_Server_Main]Initiating context switch
+[INFO][T107_Client]Test T107_Client started at 2014-03-15T22:06:49.8191720-04:00
 [INFO][T107_Client]Working directory /home/smokingrope/mono/mcs/class/System.Core/Test/System.IO.Pipes/standalone
 [TEST][T107_Client]Starting testing thread
-[INFO][T107_Client]Test runtime of 00:00:00.0009263
+[INFO][T107_Client]Test runtime of 00:00:00.0007912
+[INFO][T107_Client]Test is expecting inherited context switching tool
+[INFO][T107_Client]Test found inherited context switching tool
+[INFO][T107_Client]Enrolling in cooperative multi-tasking
+[INFO][T107_Client]Enrollment complete
 [TEST][T107_Client]Setting up streams
 [TEST][T107_Client]Created out client
 [TEST][T107_Client]Sending line 1
-[TEST][T107_Client]Sending line 2
-[TEST][T107_Client]Sending line 3
-[TEST][T107_Client]Sending line 4
-[TEST][T107_Client]Sending complete
-[INFO][T107_Server_Main]Test runtime of 00:00:01.0015254
-[INFO][T107_Client]Test runtime of 00:00:01.0015147
-[INFO][T107_Server_Main]Test runtime of 00:00:02.0017245
-[TEST][T107_Server_Main]Done Sleeping
+[INFO][T107_Client]Initiating context switch
+[INFO][T107_Server_Main]We have received control again
 [TEST][T107_Server_Main]Setting up stream tools
 [TEST][T107_Server_Main]Awaiting response from client
 [TEST][T107_Server_Main]Response received
 [TEST][T107_Server_Main]Received message 'PIPE CLIENT STARTED'
 [TEST][T107_Server_Main]Synchronization with client completed
+[INFO][T107_Server_Main]Initiating context switch
+[INFO][T107_Client]We have received control again
+[TEST][T107_Client]Sending line 2
+[TEST][T107_Client]Sending line 3
+[TEST][T107_Client]Sending line 4
+[TEST][T107_Client]Sending complete
+[INFO][T107_Server_Main]Test runtime of 00:00:01.0015530
+[INFO][T107_Client]Test Succeeded in 00:00:01.0017836
+[INFO][T107_Server_Main]We have received control again
 [TEST][T107_Server_Main]Received message from client 'Sending message 1 from pipe client'
 [TEST][T107_Server_Main]Received message from client 'Sending message 2 from pipe client'
 [TEST][T107_Server_Main]Received message from client 'Sending last message from pipe client'
@@ -35,7 +48,6 @@
 [TEST][T107_Server_Main]Disposed anonymous pipe server stream
 [TEST][T107_Server_Main]Awaiting pipe client exit
 [TEST][T107_Server_Main]Awaiting process 'test_system_io_pipes_standalone_T107_client' exit
-[INFO][T107_Client]Test Succeeded in 00:00:02.0021049
 [TEST][T107_Server_Main]Done awaiting process 'test_system_io_pipes_standalone_T107_client' exit
 [TEST][T107_Server_Main]Pipe client exited
-[INFO][T107_Server_Main]Test Succeeded in 00:00:03.0022924
+[INFO][T107_Server_Main]Test Succeeded in 00:00:02.0020080

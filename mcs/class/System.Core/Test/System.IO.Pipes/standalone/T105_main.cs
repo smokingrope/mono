@@ -22,6 +22,7 @@ namespace MonoTests.System.IO.Pipes
 
     protected override void DoTest(string[] arguments)
     {
+      CreatedContextSwitchTool();
       ProcessLauncher pipeClient = new ProcessLauncher(this, "/client:", arguments);
       if (pipeClient.ParseFailure) {
         _log.Error("Usage: /client:<clientexe>");
@@ -32,18 +33,29 @@ namespace MonoTests.System.IO.Pipes
       _log.Test("Creating anonymous pipe server stream");
       using (AnonymousPipeServerStream pipeServer = new AnonymousPipeServerStream(PipeDirection.Out, HandleInheritability.Inheritable))
       {
+	_log.Test("Being launching client process");
         pipeClient.AddArgument("/handle:", pipeServer.GetClientHandleAsString());
         pipeClient.Launch();
 
+	_log.Test("Disposing local copy of client handles");
         pipeServer.DisposeLocalCopyOfClientHandle();
+
+	ContextSwitch();
 
         _log.Test("Sending message");
         using (PipeWriter writer = new PipeWriter(pipeServer)) 
         {
+          _log.Test("Sending message 1");
           writer.WriteLine("Message 1 sent from anonymous pipe server stream");
+          _log.Test("Sending message 2");
           writer.WriteLine("Message 2 sent from anonymous pipe server stream");
+
+          ContextSwitch();
+          _log.Test("Sending message 3");
           writer.WriteLine("Message 3 sent from anonymous pipe server stream");
+          _log.Test("Sending message 4");
           writer.WriteLine("Message 4 sent from anonymous pipe server stream");
+          _log.Test("Sending message 5");
           writer.WriteLine("Message 5 sent from anonymous pipe server stream");
         }
 
@@ -52,6 +64,7 @@ namespace MonoTests.System.IO.Pipes
       _log.Test("Disposed anonymous pipe server stream");
 
       _log.Test("Awaiting pipe client exit");
+      ContextSwitch();
       pipeClient.WaitForExit();
       _log.Test("Pipe client exited");
     }

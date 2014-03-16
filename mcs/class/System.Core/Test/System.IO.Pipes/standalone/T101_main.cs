@@ -19,6 +19,7 @@ namespace MonoTests.System.IO.Pipes
 
     protected override void DoTest(string[] arguments)
     {
+      CreatedContextSwitchTool();
       _log.Test("Creating anonymous pipe server");
 
       using (AnonymousPipeServerStream pipeServer = new AnonymousPipeServerStream(PipeDirection.Out))

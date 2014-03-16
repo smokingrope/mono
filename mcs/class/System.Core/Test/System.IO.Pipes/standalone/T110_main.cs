@@ -24,6 +24,7 @@ namespace MonoTests.System.IO.Pipes
 
     protected override void DoTest(string[] arguments)
     {
+      CreatedContextSwitchTool();
       ProcessLauncher pipeClient = new ProcessLauncher(this, "/client:", arguments);
       if (pipeClient.ParseFailure) {
         _log.Error("Usage: /client:<clientexe>");
@@ -39,9 +40,10 @@ namespace MonoTests.System.IO.Pipes
         pipeClient.AddArgument("/outHandle:", syncServer.GetClientHandleAsString());
         pipeClient.Launch();
 
-        Thread.Sleep(2000);
         pipeServer.DisposeLocalCopyOfClientHandle();
         syncServer.DisposeLocalCopyOfClientHandle();
+ 
+        ContextSwitch();
 
         _log.Test("Setting up stream tools");
         using (PipeWriter writer = new PipeWriter(pipeServer)) 
@@ -58,9 +60,8 @@ namespace MonoTests.System.IO.Pipes
             return;
           }
           _log.Test("Synchronization with client completed with message '{0}'", result);
+          ContextSwitch();
   
-          _log.Test("Sleeping for 2 seconds, client should be able to exit by the time this finishes");
-          Thread.Sleep(2000);
           _log.Test("Attempting to send message on broken pipe");
 
           try 

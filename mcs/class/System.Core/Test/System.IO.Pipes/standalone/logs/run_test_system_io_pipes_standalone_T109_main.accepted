@@ -1,56 +1,82 @@
-[INFO][T109_Server_Main]Test T109_Server_Main started at 2014-02-01T16:58:20.4399110-05:00
+[INFO][T109_Server_Main]Test T109_Server_Main started at 2014-03-16T10:05:29.8945150-04:00
 [INFO][T109_Server_Main]Working directory /home/smokingrope/mono/mcs/class/System.Core/Test/System.IO.Pipes/standalone
 [TEST][T109_Server_Main]Starting testing thread
-[INFO][T109_Server_Main]Test runtime of 00:00:00.0008530
+[INFO][T109_Server_Main]Test runtime of 00:00:00.0008058
+[INFO][T109_Server_Main]Test is expecting fresh context switching tool
+[INFO][T109_Server_Main]Test found fresh context switching tool
+[INFO][T109_Server_Main]Enrolling in cooperative multi-tasking
+[INFO][T109_Server_Main]Enrollment complete
 [TEST][T109_Server_Main]Creating anonymous pipe server stream
 [INFO][T109_Server_Main]Generated argument list:
-    /inHandle:5,3 /outHandle:10,8,9
+[INFO][T109_Server_Main]    /contextSwitch:577cff1c86294955ba13d6d4b3d83799 /inHandle:6,4 /outHandle:11,9,10
 [TEST][T109_Server_Main]Starting process 'test_system_io_pipes_standalone_T109_client'
 [TEST][T109_Server_Main]Done starting process 'test_system_io_pipes_standalone_T109_client'
-[TEST][T109_Server_Main]Setting up stream tools
-[TEST][T109_Server_Main]Begin synchronization with client
-[INFO][T109_Client]Test T109_Client started at 2014-02-01T16:58:20.5836900-05:00
+[INFO][T109_Server_Main]Initiating context switch
+[INFO][T109_Client]Test T109_Client started at 2014-03-16T10:05:29.9475570-04:00
 [INFO][T109_Client]Working directory /home/smokingrope/mono/mcs/class/System.Core/Test/System.IO.Pipes/standalone
 [TEST][T109_Client]Starting testing thread
-[INFO][T109_Client]Test runtime of 00:00:00.0015541
+[INFO][T109_Client]Test runtime of 00:00:00.0007945
+[INFO][T109_Client]Test is expecting inherited context switching tool
+[INFO][T109_Client]Test found inherited context switching tool
+[INFO][T109_Client]Enrolling in cooperative multi-tasking
+[INFO][T109_Client]Enrollment complete
 [TEST][T109_Client]Setting up streams
 [TEST][T109_Client]Created client streams
 [TEST][T109_Client]Begin synchronizing with server
+[INFO][T109_Client]Initiating context switch
+[INFO][T109_Server_Main]We have received control again
+[TEST][T109_Server_Main]Setting up stream tools
+[TEST][T109_Server_Main]Begin synchronization with client
 [TEST][T109_Server_Main]Synchronization with client completed with message 'CLIENT STARTED'
-[INFO][T109_Server_Main]Begin awaiting message 0 at 2014-02-01T16:58:20.6197860-05:00
+[INFO][T109_Server_Main]Initiating context switch
+[INFO][T109_Client]We have received control again
 [TEST][T109_Client]Synchronization completed with message 'SERVER STARTED'
+[INFO][T109_Client]Unenrolling in cooperative multi-tasking
+[INFO][T109_Server_Main]We have received control again
+[INFO][T109_Server_Main]Unenrolling in cooperative multi-tasking
 [TEST][T109_Client]Sending message 0
-[INFO][T109_Client]Completed sending message 0 at 2014-02-01T16:58:20.6209000-05:00
-[INFO][T109_Server_Main]Awaiting message 0 completed at 2014-02-01T16:58:20.8202510-05:00
+[INFO][T109_Client]Completed sending message 0 at 2014-03-16T10:05:30.1746500-04:00
+[INFO][T109_Server_Main]Begin awaiting message 0 at 2014-03-16T10:05:30.2562240-04:00
+[INFO][T109_Server_Main]Awaiting message 0 completed at 2014-03-16T10:05:30.2564860-04:00
 [TEST][T109_Server_Main]Received message Message 0 from client
-[INFO][T109_Server_Main]Begin awaiting message 1 at 2014-02-01T16:58:20.8204140-05:00
-[INFO][T109_Client]Detected message 0 received at 2014-02-01T16:58:20.8204720-05:00
+[INFO][T109_Server_Main]Begin awaiting message 1 at 2014-03-16T10:05:30.2565390-04:00
+[INFO][T109_Client]Detected message 0 received at 2014-03-16T10:05:30.2565860-04:00
 [TEST][T109_Client]Sending message 1
-[INFO][T109_Client]Completed sending message 1 at 2014-02-01T16:58:20.8205550-05:00
-[INFO][T109_Server_Main]Awaiting message 1 completed at 2014-02-01T16:58:21.0209130-05:00
+[INFO][T109_Server_Main]Awaiting message 1 completed at 2014-03-16T10:05:30.2566400-04:00
 [TEST][T109_Server_Main]Received message Message 1 from client
-[INFO][T109_Server_Main]Begin awaiting message 2 at 2014-02-01T16:58:21.0210340-05:00
-[INFO][T109_Client]Detected message 1 received at 2014-02-01T16:58:21.0210830-05:00
+[INFO][T109_Server_Main]Begin awaiting message 2 at 2014-03-16T10:05:30.2566790-04:00
+[INFO][T109_Client]Completed sending message 1 at 2014-03-16T10:05:30.2567150-04:00
+[INFO][T109_Client]Detected message 1 received at 2014-03-16T10:05:30.2567480-04:00
 [TEST][T109_Client]Sending message 2
-[INFO][T109_Client]Completed sending message 2 at 2014-02-01T16:58:21.0211700-05:00
-[INFO][T109_Server_Main]Awaiting message 2 completed at 2014-02-01T16:58:21.2214880-05:00
+[INFO][T109_Server_Main]Awaiting message 2 completed at 2014-03-16T10:05:30.2568050-04:00
 [TEST][T109_Server_Main]Received message Message 2 from client
-[INFO][T109_Server_Main]Begin awaiting message 3 at 2014-02-01T16:58:21.2216580-05:00
-[INFO][T109_Client]Detected message 2 received at 2014-02-01T16:58:21.2216890-05:00
+[INFO][T109_Server_Main]Begin awaiting message 3 at 2014-03-16T10:05:30.2568440-04:00
+[INFO][T109_Client]Completed sending message 2 at 2014-03-16T10:05:30.2568710-04:00
+[INFO][T109_Client]Detected message 2 received at 2014-03-16T10:05:30.2568930-04:00
 [TEST][T109_Client]Sending message 3
-[INFO][T109_Client]Completed sending message 3 at 2014-02-01T16:58:21.2217700-05:00
-[INFO][T109_Server_Main]Awaiting message 3 completed at 2014-02-01T16:58:21.4221240-05:00
+[INFO][T109_Server_Main]Awaiting message 3 completed at 2014-03-16T10:05:30.2569570-04:00
 [TEST][T109_Server_Main]Received message Message 3 from client
+[INFO][T109_Server_Main]Enrolling in cooperative multi-tasking
+[INFO][T109_Server_Main]Enrollment complete
+[INFO][T109_Server_Main]Initiating context switch
+[INFO][T109_Client]Completed sending message 3 at 2014-03-16T10:05:30.2571470-04:00
+[INFO][T109_Client]Detected message 3 received at 2014-03-16T10:05:30.2572000-04:00
+[INFO][T109_Client]Enrolling in cooperative multi-tasking
+[INFO][T109_Client]Enrollment complete
+[INFO][T109_Client]Initiating context switch
+[INFO][T109_Server_Main]We have received control again
 [TEST][T109_Server_Main]Receiving completed, client begin shutdown
 [TEST][T109_Server_Main]Disposed stream utilities
 [TEST][T109_Server_Main]Disposed anonymous pipe server stream
-[TEST][T109_Server_Main]Awaiting process 'test_system_io_pipes_standalone_T109_client' exit
-[INFO][T109_Client]Detected message 3 received at 2014-02-01T16:58:21.4240640-05:00
+[INFO][T109_Server_Main]Initiating context switch
+[INFO][T109_Client]We have received control again
 [TEST][T109_Client]Completed receiving messages 
 [TEST][T109_Client]Disposed pipe utils
 [TEST][T109_Client]Disposed Pipe Streams
-[INFO][T109_Server_Main]Test runtime of 00:00:01.0012782
-[INFO][T109_Client]Test Succeeded in 00:00:01.0029632
+[INFO][T109_Server_Main]Test runtime of 00:00:01.0015111
+[INFO][T109_Client]Test Succeeded in 00:00:01.0013782
+[INFO][T109_Server_Main]We have received control again
+[TEST][T109_Server_Main]Awaiting process 'test_system_io_pipes_standalone_T109_client' exit
 [TEST][T109_Server_Main]Done awaiting process 'test_system_io_pipes_standalone_T109_client' exit
 [TEST][T109_Server_Main]Pipe client exited
-[INFO][T109_Server_Main]Test Succeeded in 00:00:02.0026277
+[INFO][T109_Server_Main]Test Succeeded in 00:00:02.0019321

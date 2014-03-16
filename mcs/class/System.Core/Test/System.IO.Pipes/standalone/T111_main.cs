@@ -24,6 +24,7 @@ namespace MonoTests.System.IO.Pipes
 
     protected override void DoTest(string[] arguments)
     {
+      CreatedContextSwitchTool();
       ProcessLauncher pipeClient = new ProcessLauncher(this, "/client:", arguments);
       if (pipeClient.ParseFailure) {
         _log.Error("Usage: /client:<clientexe>");
@@ -39,9 +40,9 @@ namespace MonoTests.System.IO.Pipes
         pipeClient.AddArgument("/outHandle:", syncServer.GetClientHandleAsString());
         pipeClient.Launch();
 
-        Thread.Sleep(2000);
         pipeServer.DisposeLocalCopyOfClientHandle();
         syncServer.DisposeLocalCopyOfClientHandle();
+        ContextSwitch();
 
         _log.Test("Setting up stream tools");
         using (PipeWriter writer = new PipeWriter(pipeServer)) 
@@ -57,22 +58,18 @@ namespace MonoTests.System.IO.Pipes
             _log.Error("Expected sync message from server of 'PIPE CLIENT STARTED' but received '{0}'", result);
             return;
           }
-          _log.Test("Sleeping for 1 second just to allow client to finish synchronization");
-          Thread.Sleep(1);
+          _log.Test("Allowing client to finish synchronization");
+          ContextSwitch();
 
           _log.Test("Synchronization with client completed with message '{0}'", result);
         }
         _log.Test("Finished disposing pipe tools");
-        pipeServer.Dispose();
-        syncServer.Dispose();
-        pipeServer.Dispose();
-        syncServer.Dispose();
-        pipeServer.Dispose();
-        syncServer.Dispose();
       }
       _log.Test("Finished disposing pipe streams");
 
       _log.Test("Awaiting pipe client exit");
+      ContextSwitch();
+
       pipeClient.WaitForExit();
       _log.Test("Pipe client exited");
     }

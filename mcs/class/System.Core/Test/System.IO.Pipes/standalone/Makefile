@@ -41,7 +41,16 @@ all: test_system_io_pipes_standalone_T100_client \
 		 test_system_io_pipes_standalone_T110_main \
 		 test_system_io_pipes_standalone_T110_client \
 		 test_system_io_pipes_standalone_T111_main \
-		 test_system_io_pipes_standalone_T111_client 
+		 test_system_io_pipes_standalone_T111_client \
+		 test_system_io_pipes_standalone_T112_main \
+		 test_system_io_pipes_standalone_T112_client \
+		 test_system_io_pipes_standalone_T113_main \
+		 test_system_io_pipes_standalone_T113_client \
+		 test_system_io_pipes_standalone_T114_main \
+		 test_system_io_pipes_standalone_T114_client \
+		 test_system_io_pipes_standalone_T115_main \
+		 test_system_io_pipes_standalone_T115_client 
+
 
 test: run_test_system_io_pipes_standalone_T100_main \
 			run_test_system_io_pipes_standalone_T101_main \
@@ -54,7 +63,11 @@ test: run_test_system_io_pipes_standalone_T100_main \
 			run_test_system_io_pipes_standalone_T108_main \
 			run_test_system_io_pipes_standalone_T109_main \
 			run_test_system_io_pipes_standalone_T110_main \
-			run_test_system_io_pipes_standalone_T111_main 
+			run_test_system_io_pipes_standalone_T111_main \
+			run_test_system_io_pipes_standalone_T112_main \
+			run_test_system_io_pipes_standalone_T113_main \
+			run_test_system_io_pipes_standalone_T114_main \
+			run_test_system_io_pipes_standalone_T115_main 
 
 test_system_io_pipes_standalone_T100_client: T100_client.cs PipeTestWrapper.cs
 	$(MCS_TEST) /out:$@ T100_client.cs
@@ -148,6 +161,38 @@ test_system_io_pipes_standalone_T111_main: test_system_io_pipes_standalone_T111_
 	$(MCS_TEST) /out:$@ T111_main.cs
 run_test_system_io_pipes_standalone_T111_main: test_system_io_pipes_standalone_T111_main
 	$(MONO_TEST) test_system_io_pipes_standalone_T111_main /client:test_system_io_pipes_standalone_T111_client > $(LOGDIR)$@.latest
+	$(call COMPARE_OUTPUT, $(LOGDIR)$@.accepted, $(LOGDIR)$@.latest)
+
+test_system_io_pipes_standalone_T112_client: T112_client.cs PipeTestWrapper.cs
+	$(MCS_TEST) /out:$@ T112_client.cs
+test_system_io_pipes_standalone_T112_main: test_system_io_pipes_standalone_T112_client T112_main.cs PipeTestWrapper.cs
+	$(MCS_TEST) /out:$@ T112_main.cs
+run_test_system_io_pipes_standalone_T112_main: test_system_io_pipes_standalone_T112_main
+	$(MONO_TEST) test_system_io_pipes_standalone_T112_main /client:test_system_io_pipes_standalone_T112_client > $(LOGDIR)$@.latest
+	$(call COMPARE_OUTPUT, $(LOGDIR)$@.accepted, $(LOGDIR)$@.latest)
+
+test_system_io_pipes_standalone_T113_client: T113_client.cs PipeTestWrapper.cs
+	$(MCS_TEST) /out:$@ T113_client.cs
+test_system_io_pipes_standalone_T113_main: test_system_io_pipes_standalone_T113_client T113_main.cs PipeTestWrapper.cs
+	$(MCS_TEST) /out:$@ T113_main.cs
+run_test_system_io_pipes_standalone_T113_main: test_system_io_pipes_standalone_T113_main
+	$(MONO_TEST) test_system_io_pipes_standalone_T113_main /client:test_system_io_pipes_standalone_T113_client > $(LOGDIR)$@.latest
+	$(call COMPARE_OUTPUT, $(LOGDIR)$@.accepted, $(LOGDIR)$@.latest)
+
+test_system_io_pipes_standalone_T114_client: T114_client.cs PipeTestWrapper.cs
+	$(MCS_TEST) /out:$@ T114_client.cs
+test_system_io_pipes_standalone_T114_main: test_system_io_pipes_standalone_T114_client T114_main.cs PipeTestWrapper.cs
+	$(MCS_TEST) /out:$@ T114_main.cs
+run_test_system_io_pipes_standalone_T114_main: test_system_io_pipes_standalone_T114_main
+	$(MONO_TEST) test_system_io_pipes_standalone_T114_main /client:test_system_io_pipes_standalone_T114_client > $(LOGDIR)$@.latest
+	$(call COMPARE_OUTPUT, $(LOGDIR)$@.accepted, $(LOGDIR)$@.latest)
+
+test_system_io_pipes_standalone_T115_client: T115_client.cs PipeTestWrapper.cs
+	$(MCS_TEST) /out:$@ T115_client.cs
+test_system_io_pipes_standalone_T115_main: test_system_io_pipes_standalone_T115_client T115_main.cs PipeTestWrapper.cs
+	$(MCS_TEST) /out:$@ T115_main.cs
+run_test_system_io_pipes_standalone_T115_main: test_system_io_pipes_standalone_T115_main
+	$(MONO_TEST) test_system_io_pipes_standalone_T115_main /client:test_system_io_pipes_standalone_T115_client > $(LOGDIR)$@.latest
 	$(call COMPARE_OUTPUT, $(LOGDIR)$@.accepted, $(LOGDIR)$@.latest)
 
 .PHONY: all test

@@ -21,6 +21,8 @@ namespace MonoTests.System.IO.Pipes
 
     protected override void DoTest(string[] arguments)
     {
+      InheritedContextSwitchTool();
+
       string inHandle = null, outHandle = null;
       foreach (string arg in arguments)
       {
@@ -52,6 +54,8 @@ namespace MonoTests.System.IO.Pipes
         _log.Test("Synchronizing with server");
         writer.WriteLine("PIPE CLIENT STARTED");
         _log.Test("Awaiting response from server");
+        ContextSwitch();
+
         string result = reader.ReadLine();
 
         _log.Test("Response received '{0}'", result);
@@ -60,35 +64,33 @@ namespace MonoTests.System.IO.Pipes
           _log.Error("Expected sync message from server of 'PIPE SERVER STARTED' but received '{0}'", result);
           return;
         }
+        ContextSwitch();
+        ContextNatural();
 
-        Thread.Sleep(200);
         _log.Info("Begin Reading stream at {0:O}", DateTime.Now);
         result = reader.ReadLine();
         _log.Info("Receive completed at {0:O}", DateTime.Now);
         _log.Test("Received message 1: '{0}'", result);
-        Thread.Sleep(200);
         _log.Info("Start Reading stream at {0:O}", DateTime.Now);
         result = reader.ReadLine();
         _log.Info("Receive completed at {0:O}", DateTime.Now);
         _log.Test("Received message 2: '{0}'", result);
-        Thread.Sleep(200);
         _log.Info("Start Reading stream at {0:O}", DateTime.Now);
         result = reader.ReadLine();
         _log.Info("Receive completed at {0:O}", DateTime.Now);
         _log.Test("Received message 3: '{0}'", result);
-        Thread.Sleep(200);
         _log.Info("Start Reading stream at {0:O}", DateTime.Now);
         result = reader.ReadLine();
         _log.Info("Receive completed at {0:O}", DateTime.Now);
         _log.Test("Received message 4: '{0}'", result);
-        Thread.Sleep(200);
         _log.Info("Start Reading stream at {0:O}", DateTime.Now);
         result = reader.ReadLine();
         _log.Info("Receive completed at {0:O}", DateTime.Now);
         _log.Test("Received message 5: '{0}'", result);
 
+         ContextEnroll();
+         ContextSwitch();
         _log.Info("Sleeping for a while so that parent thread can cleanup first");
-        Thread.Sleep(200);
       }}}
     }
   }

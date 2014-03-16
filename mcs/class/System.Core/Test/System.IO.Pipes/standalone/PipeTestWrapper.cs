@@ -14,6 +14,7 @@ namespace MonoTests.System.IO.Pipes
     protected readonly TestLogger _log;
     private bool _executionError = false;
     private string[] _executionArgs = null;
+    private ContextSwitchTool _cst;
 
     /// <summary>
     /// Instantiate pipe wrapper with timeout duration of 1 minute (the default)
@@ -30,6 +31,43 @@ namespace MonoTests.System.IO.Pipes
       _log = new TestLogger(this);
     }
 
+    protected void InheritedContextSwitchTool() {
+      _log.Info("Test is expecting inherited context switching tool");
+      if (_cst == null) { throw new InvalidOperationException("Expected CST Tool to exist"); }
+      if (!_cst.Inherited) {
+        throw new ArgumentException("Context switch tool was not inherited from commandline");
+      }
+      _log.Info("Test found inherited context switching tool");
+      ContextEnroll();
+    }
+    protected void CreatedContextSwitchTool() {
+      _log.Info("Test is expecting fresh context switching tool");
+      if (_cst == null) { throw new InvalidOperationException("Expected CST Tool to exist"); }
+      if (_cst.Inherited) {
+        throw new ArgumentException("Context switch tool should not have been inherited on commandline");
+      }
+      _log.Info("Test found fresh context switching tool");
+      ContextEnroll();
+    }
+
+    /// <summary>Defer execution to another thread</summary>
+    protected void ContextSwitch() {
+      _log.Info("Initiating context switch");
+      _cst.DoContextSwitch();
+      _log.Info("We have received control again");
+    }
+    /// <summary>Release all control of context switching and rely on natural operating system switches</summary>
+    protected void ContextNatural() {
+      _log.Info("Unenrolling in cooperative multi-tasking");
+      _cst.Unlock();
+    }
+    /// <summary>Begin participating in cooperative multi-tasking</summary>
+    protected void ContextEnroll() {
+      _log.Info("Enrolling in cooperative multi-tasking");
+      _cst.Enroll();
+      _log.Info("Enrollment complete");
+    }
+      
     public class TestLogger {
       private PipeTestWrapper _parent;
       public TestLogger(PipeTestWrapper parent) {
@@ -72,28 +110,26 @@ namespace MonoTests.System.IO.Pipes
       private string Format(string msg) {
         return msg.Replace(Environment.NewLine, Environment.NewLine + INDENT);
       }
-      private void Write(string msg) {
-        Console.WriteLine(msg);
+      private void Write(string header, string msg) {
+        Console.WriteLine(header + msg.Replace(Environment.NewLine, Environment.NewLine + header));
       }
       private void WriteError(Exception exc, string msg)
       {
         lock (this) {
           bool indent = false;
           if (msg != null) {
-            Write(GetHeader("ERROR") + Format(msg));
+            Write(GetHeader("ERROR"), Format(msg));
             indent = true;
           }
           if (exc != null) {
             var excMsg = Format(exc.ToString());
             if (indent) {
               excMsg = INDENT + excMsg;
-            } else {
-              excMsg = GetHeader("ERROR") + excMsg;
             }
-            Write(excMsg);
+            Write(GetHeader("ERROR"), excMsg);
             var disposed = exc as ObjectDisposedException;
             if (disposed != null) {
-              Write(INDENT + "Object disposed name: " + disposed.ObjectName);
+              Write(GetHeader("ERROR"), INDENT + "Object disposed name: " + disposed.ObjectName);
             }
           }
         }
@@ -101,13 +137,13 @@ namespace MonoTests.System.IO.Pipes
       private void WriteInfo(string msg)
       {
         lock (this) {
-          Write(GetHeader("INFO") + Format(msg));
+          Write(GetHeader("INFO"), Format(msg));
         }
       }
       private void WriteTest(string msg)
       {
         lock (this) {
-          Write(GetHeader("TEST") + Format(msg));
+          Write(GetHeader("TEST"), Format(msg));
         }
       }
     }
@@ -157,6 +193,20 @@ namespace MonoTests.System.IO.Pipes
         _log.Info("Test {0} started at {1:O}", this.TestName, DateTime.Now);
         _log.Info("Working directory {0}", Environment.CurrentDirectory);
 
+        foreach (var arg in arguments) {
+          if (arg.StartsWith("/contextSwitch:")) {
+            Guid csName;
+            if (!Guid.TryParse(arg.Substring("/contextSwitch:".Length), out csName)) {
+              _log.Error("Unable to parse /contextSwitch: argument as GUID");
+              return 10;
+            }
+            _cst = new ContextSwitchTool(csName, true);
+          }
+        }
+        if (_cst == null) {
+          _cst = new ContextSwitchTool(Guid.NewGuid(), false);
+        }
+
         this._executionArgs = arguments;
         Stopwatch runTimer = Stopwatch.StartNew();
 
@@ -192,6 +242,9 @@ namespace MonoTests.System.IO.Pipes
         _log.Error(eError, "Test runner failed");
         return 3;
       }
+      finally {
+        if (_cst != null) { _cst.Dispose(); }
+      }
     }
 
     public class ProcessLauncher
@@ -219,6 +272,8 @@ namespace MonoTests.System.IO.Pipes
           }
         }
         this.ParseFailure = _clientExe == null;
+
+        AddArgument("/contextSwitch:", _parent._cst.Name);
       }
 
       public void AddArgument(string sw, string format, params object[] args) {
@@ -336,6 +391,47 @@ namespace MonoTests.System.IO.Pipes
       public void Dispose() {
         // dont actually dispose anything
       }
+    }
+    /// <summary>Allows threads to enroll in a cooperative multi-tasking scheme for easy IPC synchronization</summary>
+    public class ContextSwitchTool : IDisposable
+    {
+      private Mutex _sync;
+      private string _name;
+      private bool _inherited;
+      private bool _ownsMutex = false;
+      public ContextSwitchTool(Guid name, bool inherited) {
+        _inherited = inherited;
+        _sync = new Mutex(false, _name = name.ToString("N"));
+      }
+      public void Dispose() {
+	Unlock();
+      }
+      public void DoContextSwitch() {
+        Unlock();
+        Lock();
+      }
+      public void Unlock() {
+        if (_ownsMutex) {
+	  if (File.Exists(".mutex." + _name)) {
+            File.Delete(".mutex." + _name);
+          }
+          _ownsMutex = false;
+        }
+        Thread.Sleep(100);
+      }
+      private void Lock() {
+        if (!_ownsMutex) {
+		while (File.Exists(".mutex." + _name)) { Thread.Sleep(10); }
+		File.Create(".mutex." + _name).Dispose();
+         }
+        _ownsMutex = true;
+      }
+      /// <summary>Enroll in cooperative multi-tasking and wait for another thread to defer to us</summary>
+      public void Enroll() {
+        Lock();
+      }
+      public string Name { get { return _name; } }
+      public bool Inherited { get { return _inherited; } }
     }
   }
 }

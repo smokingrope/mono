@@ -21,6 +21,7 @@ namespace MonoTests.System.IO.Pipes
 
     protected override void DoTest(string[] arguments)
     {
+      InheritedContextSwitchTool();
       string inHandle = null, outHandle = null;
       foreach (string arg in arguments)
       {
@@ -49,9 +50,10 @@ namespace MonoTests.System.IO.Pipes
         using (PipeWriter writer = new PipeWriter(pipeClientOut))
         using (PipeReader reader = new PipeReader(pipeClientIn)) 
         {
-          Thread.Sleep(1000);
           _log.Test("Synchronizing with server");
           writer.WriteLine("PIPE CLIENT STARTED");
+          ContextSwitch();
+
           _log.Test("Awaiting response from server");
           string result = reader.ReadLine();
           if (result != "PIPE SERVER STARTED") {

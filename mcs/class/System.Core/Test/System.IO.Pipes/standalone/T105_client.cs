@@ -20,6 +20,7 @@ namespace MonoTests.System.IO.Pipes
 
     protected override void DoTest(string[] arguments)
     {
+      InheritedContextSwitchTool();
       string handle = null;
       foreach (string arg in arguments)
       {
@@ -35,13 +36,16 @@ namespace MonoTests.System.IO.Pipes
 
       using (AnonymousPipeClientStream pipeClient = new AnonymousPipeClientStream(PipeDirection.In, handle))
       {
-        _log.Test("Reading stream");
         using (PipeReader reader = new PipeReader(pipeClient)) 
         {
+	  ContextSwitch();
+
+          _log.Test("Reading stream");
           string result = reader.ReadLine();
           _log.Test("Received message 1: '{0}'", result);
           result = reader.ReadLine();
           _log.Test("Received message 2: '{0}'", result);
+          ContextSwitch();
           result = reader.ReadLine();
           _log.Test("Received message 3: '{0}'", result);
           result = reader.ReadLine();

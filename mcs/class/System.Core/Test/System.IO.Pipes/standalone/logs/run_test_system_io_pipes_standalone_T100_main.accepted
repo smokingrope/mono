@@ -1,25 +1,35 @@
-[INFO][T100_Server_Main]Test T100_Server_Main started at 2014-02-01T11:56:47.2382820-05:00
+[INFO][T100_Server_Main]Test T100_Server_Main started at 2014-03-15T22:09:04.4009400-04:00
 [INFO][T100_Server_Main]Working directory /home/smokingrope/mono/mcs/class/System.Core/Test/System.IO.Pipes/standalone
 [TEST][T100_Server_Main]Starting testing thread
-[INFO][T100_Server_Main]Test runtime of 00:00:00.0009122
+[INFO][T100_Server_Main]Test runtime of 00:00:00.0008298
+[INFO][T100_Server_Main]Test is expecting fresh context switching tool
+[INFO][T100_Server_Main]Test found fresh context switching tool
+[INFO][T100_Server_Main]Enrolling in cooperative multi-tasking
+[INFO][T100_Server_Main]Enrollment complete
 [TEST][T100_Server_Main]Creating anonymous pipe server stream
 [INFO][T100_Server_Main]Generated argument list:
-    /handle:5,3
+[INFO][T100_Server_Main]    /contextSwitch:83c43f4678074f41a192dfd332eadc0c /handle:6,4
 [TEST][T100_Server_Main]Starting process 'test_system_io_pipes_standalone_T100_client'
 [TEST][T100_Server_Main]Done starting process 'test_system_io_pipes_standalone_T100_client'
 [TEST][T100_Server_Main]Sending message
 [TEST][T100_Server_Main]Message sending completed
 [TEST][T100_Server_Main]Disposed anonymous pipe server stream
 [TEST][T100_Server_Main]Awaiting pipe client exit
-[TEST][T100_Server_Main]Awaiting process 'test_system_io_pipes_standalone_T100_client' exit
-[INFO][T100_Client]Test T100_Client started at 2014-02-01T11:56:47.2904950-05:00
+[INFO][T100_Server_Main]Initiating context switch
+[INFO][T100_Client]Test T100_Client started at 2014-03-15T22:09:04.4567110-04:00
 [INFO][T100_Client]Working directory /home/smokingrope/mono/mcs/class/System.Core/Test/System.IO.Pipes/standalone
 [TEST][T100_Client]Starting testing thread
-[INFO][T100_Client]Test runtime of 00:00:00.0009089
+[INFO][T100_Client]Test runtime of 00:00:00.0007880
+[INFO][T100_Client]Test is expecting inherited context switching tool
+[INFO][T100_Client]Test found inherited context switching tool
+[INFO][T100_Client]Enrolling in cooperative multi-tasking
+[INFO][T100_Client]Enrollment complete
 [TEST][T100_Client]Reading stream
 [TEST][T100_Client]Received message: 'Message sent from anonymous pipe server stream'
-[INFO][T100_Server_Main]Test runtime of 00:00:01.0018473
-[INFO][T100_Client]Test Succeeded in 00:00:01.0017237
+[INFO][T100_Server_Main]Test runtime of 00:00:01.0020596
+[INFO][T100_Client]Test Succeeded in 00:00:01.0019236
+[INFO][T100_Server_Main]We have received control again
+[TEST][T100_Server_Main]Awaiting process 'test_system_io_pipes_standalone_T100_client' exit
 [TEST][T100_Server_Main]Done awaiting process 'test_system_io_pipes_standalone_T100_client' exit
 [TEST][T100_Server_Main]Pipe client exited
-[INFO][T100_Server_Main]Test Succeeded in 00:00:02.0033204
+[INFO][T100_Server_Main]Test Succeeded in 00:00:02.0025635

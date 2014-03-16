@@ -1,68 +1,90 @@
-[INFO][T106_Server_Main]Test T106_Server_Main started at 2014-02-01T12:12:35.0883790-05:00
+[INFO][T106_Server_Main]Test T106_Server_Main started at 2014-03-15T22:37:40.4099790-04:00
 [INFO][T106_Server_Main]Working directory /home/smokingrope/mono/mcs/class/System.Core/Test/System.IO.Pipes/standalone
 [TEST][T106_Server_Main]Starting testing thread
-[INFO][T106_Server_Main]Test runtime of 00:00:00.0009136
+[INFO][T106_Server_Main]Test runtime of 00:00:00.0008656
+[INFO][T106_Server_Main]Test is expecting fresh context switching tool
+[INFO][T106_Server_Main]Test found fresh context switching tool
+[INFO][T106_Server_Main]Enrolling in cooperative multi-tasking
+[INFO][T106_Server_Main]Enrollment complete
 [TEST][T106_Server_Main]Creating anonymous pipe server stream
+[TEST][T106_Server_Main]Launching pipe client
 [INFO][T106_Server_Main]Generated argument list:
-    /inHandle:5,3 /outHandle:10,8,9
+[INFO][T106_Server_Main]    /contextSwitch:65b64500c6f24707b646c8ee21f454a6 /inHandle:6,4 /outHandle:11,9,10
 [TEST][T106_Server_Main]Starting process 'test_system_io_pipes_standalone_T106_client'
 [TEST][T106_Server_Main]Done starting process 'test_system_io_pipes_standalone_T106_client'
-[TEST][T106_Server_Main]Setting up stream tools
-[TEST][T106_Server_Main]Begin Synchronization with client
-[TEST][T106_Server_Main]Awaiting response from client
-[INFO][T106_Client]Test T106_Client started at 2014-02-01T12:12:35.1386600-05:00
+[TEST][T106_Server_Main]Disposing local copy of client handles
+[INFO][T106_Server_Main]Initiating context switch
+[INFO][T106_Client]Test T106_Client started at 2014-03-15T22:37:40.4699600-04:00
 [INFO][T106_Client]Working directory /home/smokingrope/mono/mcs/class/System.Core/Test/System.IO.Pipes/standalone
 [TEST][T106_Client]Starting testing thread
-[INFO][T106_Client]Test runtime of 00:00:00.0008506
+[INFO][T106_Client]Test runtime of 00:00:00.0008024
+[INFO][T106_Client]Test is expecting inherited context switching tool
+[INFO][T106_Client]Test found inherited context switching tool
+[INFO][T106_Client]Enrolling in cooperative multi-tasking
+[INFO][T106_Client]Enrollment complete
 [TEST][T106_Client]Setting up streams
-[INFO][T106_Client]Received in handle 5,3
-[INFO][T106_Client]Received out handle 10,8,9
+[INFO][T106_Client]Received in handle 6,4
+[INFO][T106_Client]Received out handle 11,9,10
 [TEST][T106_Client]Created in client
 [TEST][T106_Client]Created out client
 [TEST][T106_Client]Synchronizing with server
+[TEST][T106_Client]Awaiting response from server
+[INFO][T106_Client]Initiating context switch
+[INFO][T106_Server_Main]We have received control again
+[TEST][T106_Server_Main]Setting up stream tools
+[TEST][T106_Server_Main]Begin Synchronization with client
+[TEST][T106_Server_Main]Awaiting response from client
+[INFO][T106_Server_Main]Initiating context switch
+[INFO][T106_Client]We have received control again
+[TEST][T106_Client]Response received 'PIPE SERVER STARTED'
+[INFO][T106_Client]Initiating context switch
+[INFO][T106_Server_Main]We have received control again
 [TEST][T106_Server_Main]Response received 'PIPE CLIENT STARTED'
 [TEST][T106_Server_Main]Synchronization with client completed
-[TEST][T106_Client]Awaiting response from server
-[TEST][T106_Client]Response received 'PIPE SERVER STARTED'
-[INFO][T106_Client]Begin Reading stream at 2014-02-01T12:12:35.3651590-05:00
-[INFO][T106_Server_Main]Test runtime of 00:00:01.0015542
-[INFO][T106_Client]Test runtime of 00:00:01.0016560
-[INFO][T106_Server_Main]Test runtime of 00:00:02.0017378
-[INFO][T106_Client]Test runtime of 00:00:02.0019200
+[INFO][T106_Server_Main]Unenrolling in cooperative multi-tasking
+[INFO][T106_Client]We have received control again
+[INFO][T106_Client]Unenrolling in cooperative multi-tasking
 [TEST][T106_Server_Main]Sending message 1
-[INFO][T106_Server_Main]Wait begins at timestamp 2014-02-01T12:12:37.1641010-05:00
-[INFO][T106_Client]Receive completed at 2014-02-01T12:12:37.1661040-05:00
+[INFO][T106_Server_Main]Wait begins at timestamp 2014-03-15T22:37:40.7789140-04:00
+[INFO][T106_Client]Begin Reading stream at 2014-03-15T22:37:40.7983610-04:00
+[INFO][T106_Client]Receive completed at 2014-03-15T22:37:40.7984750-04:00
 [TEST][T106_Client]Received message 1: 'Message 1 sent from anonymous pipe server stream'
+[INFO][T106_Client]Start Reading stream at 2014-03-15T22:37:40.7985380-04:00
 [TEST][T106_Server_Main]Sending message 2
-[INFO][T106_Server_Main]Wait begins at timestamp 2014-02-01T12:12:37.1662140-05:00
-[INFO][T106_Client]Start Reading stream at 2014-02-01T12:12:37.3666000-05:00
-[INFO][T106_Client]Receive completed at 2014-02-01T12:12:37.3666860-05:00
+[INFO][T106_Client]Receive completed at 2014-03-15T22:37:40.7986770-04:00
 [TEST][T106_Client]Received message 2: 'Message 2 sent from anonymous pipe server stream'
+[INFO][T106_Client]Start Reading stream at 2014-03-15T22:37:40.7987400-04:00
+[INFO][T106_Server_Main]Wait begins at timestamp 2014-03-15T22:37:40.7987870-04:00
 [TEST][T106_Server_Main]Sending message 3
-[INFO][T106_Server_Main]Wait begins at timestamp 2014-02-01T12:12:37.3667660-05:00
-[INFO][T106_Client]Start Reading stream at 2014-02-01T12:12:37.5672380-05:00
-[INFO][T106_Client]Receive completed at 2014-02-01T12:12:37.5673230-05:00
+[INFO][T106_Client]Receive completed at 2014-03-15T22:37:40.7989250-04:00
 [TEST][T106_Client]Received message 3: 'Message 3 sent from anonymous pipe server stream'
+[INFO][T106_Client]Start Reading stream at 2014-03-15T22:37:40.7989890-04:00
+[INFO][T106_Server_Main]Wait begins at timestamp 2014-03-15T22:37:40.7990350-04:00
 [TEST][T106_Server_Main]Sending message 4
-[INFO][T106_Server_Main]Wait begins at timestamp 2014-02-01T12:12:37.5674060-05:00
-[INFO][T106_Client]Start Reading stream at 2014-02-01T12:12:37.7678730-05:00
-[INFO][T106_Client]Receive completed at 2014-02-01T12:12:37.7679500-05:00
+[INFO][T106_Client]Receive completed at 2014-03-15T22:37:40.7991610-04:00
 [TEST][T106_Client]Received message 4: 'Message 4 sent from anonymous pipe server stream'
+[INFO][T106_Client]Start Reading stream at 2014-03-15T22:37:40.7992390-04:00
+[INFO][T106_Server_Main]Wait begins at timestamp 2014-03-15T22:37:40.7992860-04:00
 [TEST][T106_Server_Main]Sending message 5
-[INFO][T106_Server_Main]Wait begins at timestamp 2014-02-01T12:12:37.7680270-05:00
-[INFO][T106_Client]Start Reading stream at 2014-02-01T12:12:37.9685360-05:00
-[INFO][T106_Client]Receive completed at 2014-02-01T12:12:37.9687430-05:00
+[INFO][T106_Client]Receive completed at 2014-03-15T22:37:40.7994520-04:00
 [TEST][T106_Client]Received message 5: 'Message 5 sent from anonymous pipe server stream'
-[INFO][T106_Client]Sleeping for a while so that parent thread can cleanup first
+[INFO][T106_Client]Enrolling in cooperative multi-tasking
+[INFO][T106_Client]Enrollment complete
+[INFO][T106_Client]Initiating context switch
+[INFO][T106_Server_Main]Wait begins at timestamp 2014-03-15T22:37:40.7996660-04:00
 [TEST][T106_Server_Main]Disposing stream writer
+[INFO][T106_Server_Main]Enrolling in cooperative multi-tasking
+[INFO][T106_Server_Main]Enrollment complete
 [TEST][T106_Server_Main]Message sending completed
 [TEST][T106_Server_Main]Disposed anonymous pipe server stream
 [TEST][T106_Server_Main]Awaiting pipe client exit
+[INFO][T106_Server_Main]Initiating context switch
+[INFO][T106_Client]We have received control again
+[INFO][T106_Client]Sleeping for a while so that parent thread can cleanup first
+[INFO][T106_Server_Main]Test runtime of 00:00:01.0019719
+[INFO][T106_Client]Test Succeeded in 00:00:01.0014869
+[INFO][T106_Server_Main]We have received control again
 [TEST][T106_Server_Main]Awaiting process 'test_system_io_pipes_standalone_T106_client' exit
-[INFO][T106_Server_Main]Test runtime of 00:00:03.0019918
-[INFO][T106_Client]Test runtime of 00:00:03.0021767
-[INFO][T106_Server_Main]Test runtime of 00:00:04.0022859
-[INFO][T106_Client]Test Succeeded in 00:00:04.0028186
 [TEST][T106_Server_Main]Done awaiting process 'test_system_io_pipes_standalone_T106_client' exit
 [TEST][T106_Server_Main]Pipe client exited
-[INFO][T106_Server_Main]Test Succeeded in 00:00:05.0028302
+[INFO][T106_Server_Main]Test Succeeded in 00:00:02.0025130

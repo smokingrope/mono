@@ -1,29 +1,54 @@
-[INFO][T105_Server_Main]Test T105_Server_Main started at 2014-02-01T12:12:04.5278660-05:00
+[INFO][T105_Server_Main]Test T105_Server_Main started at 2014-03-16T10:25:29.9860220-04:00
 [INFO][T105_Server_Main]Working directory /home/smokingrope/mono/mcs/class/System.Core/Test/System.IO.Pipes/standalone
 [TEST][T105_Server_Main]Starting testing thread
-[INFO][T105_Server_Main]Test runtime of 00:00:00.0009332
+[INFO][T105_Server_Main]Test runtime of 00:00:00.0008308
+[INFO][T105_Server_Main]Test is expecting fresh context switching tool
+[INFO][T105_Server_Main]Test found fresh context switching tool
+[INFO][T105_Server_Main]Enrolling in cooperative multi-tasking
+[INFO][T105_Server_Main]Enrollment complete
 [TEST][T105_Server_Main]Creating anonymous pipe server stream
+[TEST][T105_Server_Main]Being launching client process
 [INFO][T105_Server_Main]Generated argument list:
-    /handle:5,3
+[INFO][T105_Server_Main]    /contextSwitch:f35a177f4a714ca986c5ef5eea2cced1 /handle:6,4
 [TEST][T105_Server_Main]Starting process 'test_system_io_pipes_standalone_T105_client'
 [TEST][T105_Server_Main]Done starting process 'test_system_io_pipes_standalone_T105_client'
-[TEST][T105_Server_Main]Sending message
-[TEST][T105_Server_Main]Message sending completed
-[TEST][T105_Server_Main]Disposed anonymous pipe server stream
-[TEST][T105_Server_Main]Awaiting pipe client exit
-[TEST][T105_Server_Main]Awaiting process 'test_system_io_pipes_standalone_T105_client' exit
-[INFO][T105_Client]Test T105_Client started at 2014-02-01T12:12:04.5792810-05:00
+[TEST][T105_Server_Main]Disposing local copy of client handles
+[INFO][T105_Server_Main]Initiating context switch
+[INFO][T105_Client]Test T105_Client started at 2014-03-16T10:25:30.0388020-04:00
 [INFO][T105_Client]Working directory /home/smokingrope/mono/mcs/class/System.Core/Test/System.IO.Pipes/standalone
 [TEST][T105_Client]Starting testing thread
-[INFO][T105_Client]Test runtime of 00:00:00.0008557
+[INFO][T105_Client]Test runtime of 00:00:00.0007787
+[INFO][T105_Client]Test is expecting inherited context switching tool
+[INFO][T105_Client]Test found inherited context switching tool
+[INFO][T105_Client]Enrolling in cooperative multi-tasking
+[INFO][T105_Client]Enrollment complete
+[INFO][T105_Client]Initiating context switch
+[INFO][T105_Server_Main]We have received control again
+[TEST][T105_Server_Main]Sending message
+[TEST][T105_Server_Main]Sending message 1
+[TEST][T105_Server_Main]Sending message 2
+[INFO][T105_Server_Main]Initiating context switch
+[INFO][T105_Client]We have received control again
 [TEST][T105_Client]Reading stream
 [TEST][T105_Client]Received message 1: 'Message 1 sent from anonymous pipe server stream'
 [TEST][T105_Client]Received message 2: 'Message 2 sent from anonymous pipe server stream'
+[INFO][T105_Client]Initiating context switch
+[INFO][T105_Server_Main]We have received control again
+[TEST][T105_Server_Main]Sending message 3
+[TEST][T105_Server_Main]Sending message 4
+[TEST][T105_Server_Main]Sending message 5
+[TEST][T105_Server_Main]Message sending completed
+[TEST][T105_Server_Main]Disposed anonymous pipe server stream
+[TEST][T105_Server_Main]Awaiting pipe client exit
+[INFO][T105_Server_Main]Initiating context switch
+[INFO][T105_Client]We have received control again
 [TEST][T105_Client]Received message 3: 'Message 3 sent from anonymous pipe server stream'
 [TEST][T105_Client]Received message 4: 'Message 4 sent from anonymous pipe server stream'
 [TEST][T105_Client]Received message 5: 'Message 5 sent from anonymous pipe server stream'
-[INFO][T105_Server_Main]Test runtime of 00:00:01.0021438
-[INFO][T105_Client]Test Succeeded in 00:00:01.0015056
+[INFO][T105_Server_Main]Test runtime of 00:00:01.0017024
+[INFO][T105_Client]Test Succeeded in 00:00:01.0011566
+[INFO][T105_Server_Main]We have received control again
+[TEST][T105_Server_Main]Awaiting process 'test_system_io_pipes_standalone_T105_client' exit
 [TEST][T105_Server_Main]Done awaiting process 'test_system_io_pipes_standalone_T105_client' exit
 [TEST][T105_Server_Main]Pipe client exited
-[INFO][T105_Server_Main]Test Succeeded in 00:00:02.0026344
+[INFO][T105_Server_Main]Test Succeeded in 00:00:02.0020923

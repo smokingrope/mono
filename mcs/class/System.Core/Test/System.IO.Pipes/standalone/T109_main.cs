@@ -23,6 +23,7 @@ namespace MonoTests.System.IO.Pipes
 
     protected override void DoTest(string[] arguments)
     {
+      CreatedContextSwitchTool();
       ProcessLauncher pipeClient = new ProcessLauncher(this, "/client:", arguments);
       if (pipeClient.ParseFailure) {
         _log.Error("Usage: /client:<clientexe>");
@@ -41,6 +42,8 @@ namespace MonoTests.System.IO.Pipes
         syncServer.DisposeLocalCopyOfClientHandle();
         readServer.DisposeLocalCopyOfClientHandle();
 
+        ContextSwitch();
+
         _log.Test("Setting up stream tools");
 
         using (var reader = new PipeReader(readServer))
@@ -54,20 +57,24 @@ namespace MonoTests.System.IO.Pipes
             return;
           }
           _log.Test("Synchronization with client completed with message '{0}'", result);
+          ContextSwitch();
+          ContextNatural();
 
           for (int i = 0; i < 4; ++i) {
             _log.Info("Begin awaiting message {0} at {1:O}", i, DateTime.Now);
-            Thread.Sleep(200);
             result = reader.ReadLine();
             _log.Info("Awaiting message {0} completed at {1:O}", i, DateTime.Now);
             _log.Test("Received message {0} from client", result);
           }
 
+          ContextEnroll();
+          ContextSwitch();
           _log.Test("Receiving completed, client begin shutdown");
         }
         _log.Test("Disposed stream utilities");
       }
       _log.Test("Disposed anonymous pipe server stream");
+      ContextSwitch();
 
       pipeClient.WaitForExit();
       _log.Test("Pipe client exited");

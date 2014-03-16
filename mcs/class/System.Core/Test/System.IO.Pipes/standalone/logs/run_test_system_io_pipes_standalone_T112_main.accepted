@@ -1,0 +1,38 @@
+[INFO][T112_Server_Main]Test T112_Server_Main started at 2014-03-16T10:16:03.9593790-04:00
+[INFO][T112_Server_Main]Working directory /home/smokingrope/mono/mcs/class/System.Core/Test/System.IO.Pipes/standalone
+[TEST][T112_Server_Main]Starting testing thread
+[INFO][T112_Server_Main]Test runtime of 00:00:00.0008289
+[INFO][T112_Server_Main]Test is expecting fresh context switching tool
+[INFO][T112_Server_Main]Test found fresh context switching tool
+[INFO][T112_Server_Main]Enrolling in cooperative multi-tasking
+[INFO][T112_Server_Main]Enrollment complete
+[TEST][T112_Server_Main]Creating anonymous pipe server stream
+[TEST][T112_Server_Main]Launching clientl
+[INFO][T112_Server_Main]Generated argument list:
+[INFO][T112_Server_Main]    /contextSwitch:0c6fda4706e64a9e9f6db105e4651700 /inHandle:6,4
+[TEST][T112_Server_Main]Starting process 'test_system_io_pipes_standalone_T112_client'
+[TEST][T112_Server_Main]Done starting process 'test_system_io_pipes_standalone_T112_client'
+[TEST][T112_Server_Main]Dispoing client handles
+[INFO][T112_Server_Main]Initiating context switch
+[INFO][T112_Client]Test T112_Client started at 2014-03-16T10:16:04.0137410-04:00
+[INFO][T112_Client]Working directory /home/smokingrope/mono/mcs/class/System.Core/Test/System.IO.Pipes/standalone
+[TEST][T112_Client]Starting testing thread
+[INFO][T112_Client]Test runtime of 00:00:00.0007899
+[INFO][T112_Client]Test is expecting inherited context switching tool
+[INFO][T112_Client]Test found inherited context switching tool
+[INFO][T112_Client]Enrolling in cooperative multi-tasking
+[INFO][T112_Client]Enrollment complete
+[TEST][T112_Client]Setting up streams
+[INFO][T112_Client]Received in handle 6,4
+[TEST][T112_Client]Received expect exception
+[TEST][T112_Client]Done disposing pipe streams
+[INFO][T112_Server_Main]Test runtime of 00:00:01.0014585
+[INFO][T112_Client]Test Succeeded in 00:00:01.0021083
+[INFO][T112_Server_Main]We have received control again
+[TEST][T112_Server_Main]Awaiting pipe client exit
+[TEST][T112_Server_Main]Awaiting process 'test_system_io_pipes_standalone_T112_client' exit
+[TEST][T112_Server_Main]Done awaiting process 'test_system_io_pipes_standalone_T112_client' exit
+[TEST][T112_Server_Main]Finished disposing pipe tools
+[TEST][T112_Server_Main]Finished disposing pipe streams
+[TEST][T112_Server_Main]Pipe client exited
+[INFO][T112_Server_Main]Test Succeeded in 00:00:02.0018072

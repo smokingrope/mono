@@ -22,6 +22,8 @@ namespace MonoTests.System.IO.Pipes
 
     protected override void DoTest(string[] arguments)
     {
+      CreatedContextSwitchTool();
+
       ProcessLauncher pipeClient = new ProcessLauncher(this, "/client:", arguments);
       if (pipeClient.ParseFailure) {
         _log.Error("Usage: /client:<clientexe>");
@@ -32,14 +34,14 @@ namespace MonoTests.System.IO.Pipes
       _log.Test("Creating anonymous pipe server stream");
       using (AnonymousPipeServerStream syncServer = new AnonymousPipeServerStream(PipeDirection.In, HandleInheritability.Inheritable))
       {
+	_log.Test("Launching pipe client");
         pipeClient.AddArgument("/outHandle:", syncServer.GetClientHandleAsString());
         pipeClient.Launch();
 
-        _log.Test("Sleeping for a few seconds so the client can maybe catch up?");
-        global::System.Threading.Thread.Sleep(2000);
-        _log.Test("Done Sleeping");
-
+	_log.Test("Disposing local copy of client handles");
         syncServer.DisposeLocalCopyOfClientHandle();
+
+        ContextSwitch();
 
         _log.Test("Setting up stream tools");
         using (PipeReader reader = new PipeReader(syncServer))
@@ -54,6 +56,7 @@ namespace MonoTests.System.IO.Pipes
           } else {
             _log.Test("Received message '{0}'", result);
             _log.Test("Synchronization with client completed");
+            ContextSwitch();
 
             result = reader.ReadLine();
             _log.Test("Received message from client '{0}'", result);

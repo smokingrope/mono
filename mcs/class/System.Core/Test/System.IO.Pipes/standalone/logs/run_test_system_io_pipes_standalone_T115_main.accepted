@@ -1,0 +1,36 @@
+[INFO][T115_Server_Main]Test T115_Server_Main started at 2014-03-16T10:24:12.3166040-04:00
+[INFO][T115_Server_Main]Working directory /home/smokingrope/mono/mcs/class/System.Core/Test/System.IO.Pipes/standalone
+[TEST][T115_Server_Main]Starting testing thread
+[INFO][T115_Server_Main]Test runtime of 00:00:00.0008219
+[INFO][T115_Server_Main]Test is expecting fresh context switching tool
+[INFO][T115_Server_Main]Test found fresh context switching tool
+[INFO][T115_Server_Main]Enrolling in cooperative multi-tasking
+[INFO][T115_Server_Main]Enrollment complete
+[TEST][T115_Server_Main]Creating anonymous pipe server stream
+[INFO][T115_Server_Main]Generated argument list:
+[INFO][T115_Server_Main]    /contextSwitch:a40d2cbffa8e432b8b8af453434452f7 /outHandle:7,5,6
+[TEST][T115_Server_Main]Starting process 'test_system_io_pipes_standalone_T115_client'
+[TEST][T115_Server_Main]Done starting process 'test_system_io_pipes_standalone_T115_client'
+[TEST][T115_Server_Main]Disposing local copy of client handles
+[INFO][T115_Server_Main]Initiating context switch
+[INFO][T115_Server_Client]Test T115_Server_Client started at 2014-03-16T10:24:12.3707840-04:00
+[INFO][T115_Server_Client]Working directory /home/smokingrope/mono/mcs/class/System.Core/Test/System.IO.Pipes/standalone
+[TEST][T115_Server_Client]Starting testing thread
+[INFO][T115_Server_Client]Test runtime of 00:00:00.0007967
+[INFO][T115_Server_Client]Test is expecting inherited context switching tool
+[INFO][T115_Server_Client]Test found inherited context switching tool
+[INFO][T115_Server_Client]Enrolling in cooperative multi-tasking
+[INFO][T115_Server_Client]Enrollment complete
+[TEST][T115_Server_Client]Setting up streams
+[INFO][T115_Server_Client]Received out handle 7,5,6
+[TEST][T115_Server_Client]Received expected exception
+[TEST][T115_Server_Client]Finished disposing pipe streams
+[INFO][T115_Server_Main]Test runtime of 00:00:01.0013834
+[INFO][T115_Server_Client]Test Succeeded in 00:00:01.0022451
+[INFO][T115_Server_Main]We have received control again
+[TEST][T115_Server_Main]Awaiting pipe client exit
+[TEST][T115_Server_Main]Awaiting process 'test_system_io_pipes_standalone_T115_client' exit
+[TEST][T115_Server_Main]Done awaiting process 'test_system_io_pipes_standalone_T115_client' exit
+[TEST][T115_Server_Main]Finished disposing pipe streams
+[TEST][T115_Server_Main]Pipe client exited
+[INFO][T115_Server_Main]Test Succeeded in 00:00:02.0018640

@@ -21,6 +21,8 @@ namespace MonoTests.System.IO.Pipes
 
     protected override void DoTest(string[] arguments)
     {
+      InheritedContextSwitchTool();
+
       string outHandle = null;
       foreach (string arg in arguments)
       {
@@ -42,6 +44,8 @@ namespace MonoTests.System.IO.Pipes
         {
           _log.Test("Sending line 1");
           writer.WriteLine("PIPE CLIENT STARTED");
+          ContextSwitch();
+
           _log.Test("Sending line 2");
           writer.WriteLine("Sending message 1 from pipe client");
           _log.Test("Sending line 3");

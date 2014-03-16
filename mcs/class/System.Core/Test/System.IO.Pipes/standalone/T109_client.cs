@@ -24,6 +24,7 @@ namespace MonoTests.System.IO.Pipes
 
     protected override void DoTest(string[] arguments)
     {
+      InheritedContextSwitchTool();
       string inHandle = null;
       string outHandle = null;
       foreach (string arg in arguments)
@@ -53,6 +54,7 @@ namespace MonoTests.System.IO.Pipes
         {
           _log.Test("Begin synchronizing with server");
           writer.WriteLine("CLIENT STARTED");
+          ContextSwitch();
           string result = reader.ReadLine();
           if (result != "SERVER STARTED") {
             _log.Error("UNEXPECTED MESSAGE WHILE SYNCHRONIZING '{0}'", result);
@@ -60,6 +62,7 @@ namespace MonoTests.System.IO.Pipes
           }
           _log.Test("Synchronization completed with message '{0}'", result);
 
+          ContextNatural();
           for (int i = 0; i < 4; ++i) {
             _log.Test("Sending message {0}", i);
             writer.WriteLine("Message " + i);
@@ -67,6 +70,8 @@ namespace MonoTests.System.IO.Pipes
             pipeClientOut.WaitForPipeDrain();
             _log.Info("Detected message {0} received at {1:O}", i, DateTime.Now);
           }
+          ContextEnroll();
+          ContextSwitch();
           _log.Test("Completed receiving messages ");
         }
         _log.Test("Disposed pipe utils");

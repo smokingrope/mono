@@ -1,38 +1,47 @@
-[INFO][T110_Server_Main]Test T110_Server_Main started at 2014-02-01T17:03:30.3183610-05:00
+[INFO][T110_Server_Main]Test T110_Server_Main started at 2014-03-16T10:10:35.4150540-04:00
 [INFO][T110_Server_Main]Working directory /home/smokingrope/mono/mcs/class/System.Core/Test/System.IO.Pipes/standalone
 [TEST][T110_Server_Main]Starting testing thread
-[INFO][T110_Server_Main]Test runtime of 00:00:00.0009578
+[INFO][T110_Server_Main]Test runtime of 00:00:00.0008217
+[INFO][T110_Server_Main]Test is expecting fresh context switching tool
+[INFO][T110_Server_Main]Test found fresh context switching tool
+[INFO][T110_Server_Main]Enrolling in cooperative multi-tasking
+[INFO][T110_Server_Main]Enrollment complete
 [TEST][T110_Server_Main]Creating anonymous pipe server stream
 [INFO][T110_Server_Main]Generated argument list:
-    /inHandle:5,3 /outHandle:10,8,9
+[INFO][T110_Server_Main]    /contextSwitch:8129ee732c304bc2b54d26f135b182f8 /inHandle:6,4 /outHandle:11,9,10
 [TEST][T110_Server_Main]Starting process 'test_system_io_pipes_standalone_T110_client'
 [TEST][T110_Server_Main]Done starting process 'test_system_io_pipes_standalone_T110_client'
-[INFO][T110_Client]Test T110_Client started at 2014-02-01T17:03:30.3868100-05:00
+[INFO][T110_Server_Main]Initiating context switch
+[INFO][T110_Client]Test T110_Client started at 2014-03-16T10:10:35.4686190-04:00
 [INFO][T110_Client]Working directory /home/smokingrope/mono/mcs/class/System.Core/Test/System.IO.Pipes/standalone
 [TEST][T110_Client]Starting testing thread
-[INFO][T110_Client]Test runtime of 00:00:00.0008584
+[INFO][T110_Client]Test runtime of 00:00:00.0007751
+[INFO][T110_Client]Test is expecting inherited context switching tool
+[INFO][T110_Client]Test found inherited context switching tool
+[INFO][T110_Client]Enrolling in cooperative multi-tasking
+[INFO][T110_Client]Enrollment complete
 [TEST][T110_Client]Setting up streams
-[INFO][T110_Client]Received in handle 5,3
-[INFO][T110_Client]Received out handle 10,8,9
+[INFO][T110_Client]Received in handle 6,4
+[INFO][T110_Client]Received out handle 11,9,10
 [TEST][T110_Client]Created out client
-[INFO][T110_Server_Main]Test runtime of 00:00:01.0015295
-[INFO][T110_Client]Test runtime of 00:00:01.0011592
 [TEST][T110_Client]Synchronizing with server
-[TEST][T110_Client]Awaiting response from server
-[INFO][T110_Server_Main]Test runtime of 00:00:02.0017294
+[INFO][T110_Client]Initiating context switch
+[INFO][T110_Server_Main]We have received control again
 [TEST][T110_Server_Main]Setting up stream tools
 [TEST][T110_Server_Main]Begin Synchronization with client
 [TEST][T110_Server_Main]Awaiting response from client
 [TEST][T110_Server_Main]Response received 'PIPE CLIENT STARTED'
 [TEST][T110_Server_Main]Synchronization with client completed with message 'PIPE CLIENT STARTED'
-[TEST][T110_Server_Main]Sleeping for 2 seconds, client should be able to exit by the time this finishes
+[INFO][T110_Server_Main]Initiating context switch
+[INFO][T110_Client]We have received control again
+[TEST][T110_Client]Awaiting response from server
 [TEST][T110_Client]Synchronization with server completed with message 'PIPE SERVER STARTED'
 [TEST][T110_Client]Begin deisposing client
 [TEST][T110_Client]Done dispose pipe tools
 [TEST][T110_Client]Done disposing pipe streams
-[INFO][T110_Client]Test Succeeded in 00:00:02.0015054
-[INFO][T110_Server_Main]Test runtime of 00:00:03.0019882
-[INFO][T110_Server_Main]Test runtime of 00:00:04.0022675
+[INFO][T110_Server_Main]Test runtime of 00:00:01.0014733
+[INFO][T110_Client]Test Succeeded in 00:00:01.0016715
+[INFO][T110_Server_Main]We have received control again
 [TEST][T110_Server_Main]Attempting to send message on broken pipe
 [TEST][T110_Server_Main]Got the expected 'pipe broken' exception
 [TEST][T110_Server_Main]Finished disposing pipe tools
@@ -41,4 +50,4 @@
 [TEST][T110_Server_Main]Awaiting process 'test_system_io_pipes_standalone_T110_client' exit
 [TEST][T110_Server_Main]Done awaiting process 'test_system_io_pipes_standalone_T110_client' exit
 [TEST][T110_Server_Main]Pipe client exited
-[INFO][T110_Server_Main]Test Succeeded in 00:00:05.0027915
+[INFO][T110_Server_Main]Test Succeeded in 00:00:02.0019472

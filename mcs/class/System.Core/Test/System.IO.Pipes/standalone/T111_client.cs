@@ -23,6 +23,7 @@ namespace MonoTests.System.IO.Pipes
 
     protected override void DoTest(string[] arguments)
     {
+      InheritedContextSwitchTool();
       string inHandle = null, outHandle = null;
       foreach (string arg in arguments)
       {
@@ -53,6 +54,7 @@ namespace MonoTests.System.IO.Pipes
         {
           _log.Test("Begin Synchronization with server");
           writer.WriteLine("PIPE CLIENT STARTED");
+          ContextSwitch();
           _log.Test("Awaiting response from server");
           string result = reader.ReadLine();
           _log.Test("Response received '{0}'", result);
@@ -63,8 +65,9 @@ namespace MonoTests.System.IO.Pipes
           }
           _log.Test("Synchronization with server completed with message '{0}'", result);
   
-          _log.Test("Sleeping for 2 seconds, server should be able to exit by the time this finishes");
-          Thread.Sleep(2000);
+          _log.Test("Waiting for server to dispose pipe stream");
+          ContextSwitch(); 
+ 
           _log.Test("Attempting to send message on broken pipe");
 
           try 
