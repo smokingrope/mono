@@ -71,31 +71,31 @@ namespace System.IO.Pipes
 			throw new NotImplementedException ();
 		}
 
-    public abstract void Dispose();
+		public abstract void Dispose();
 
-    public virtual bool IsBroken()
-    {
-      throw new NotImplementedException("TODO");
-    }
+		public virtual bool IsBroken()
+		{
+			throw new NotImplementedException("TODO");
+		}
 	}
 
 	class Win32AnonymousPipeClient : Win32AnonymousPipe, IAnonymousPipeClient
 	{
 		// AnonymousPipeClientStream owner;
 
-    public Win32AnonymousPipeClient (AnonymousPipeClientStream owner, string pipeHandleAsString)
-    {
-      if (string.IsNullOrEmpty(pipeHandleAsString))
-        throw new IOException ("pipeHandleAsString - null or empty");
+		public Win32AnonymousPipeClient (AnonymousPipeClientStream owner, string pipeHandleAsString)
+		{
+			if (string.IsNullOrEmpty(pipeHandleAsString))
+				throw new IOException ("pipeHandleAsString - null or empty");
 
-      long handle;
-      if (!long.TryParse(pipeHandleAsString, System.Globalization.NumberStyles.Integer, System.Globalization.NumberFormatInfo.InvariantInfo, out handle)) {
-        throw new IOException ("pipeHandleAsString - int64");
-      }
+			long handle;
+			if (!long.TryParse(pipeHandleAsString, System.Globalization.NumberStyles.Integer, System.Globalization.NumberFormatInfo.InvariantInfo, out handle)) {
+				throw new IOException ("pipeHandleAsString - int64");
+			}
 
-      // We use int64 for safety
-      this.handle = new SafePipeHandle (new IntPtr (handle), true);
-    }
+			// We use int64 for safety
+			this.handle = new SafePipeHandle (new IntPtr (handle), true);
+		}
 		public Win32AnonymousPipeClient (AnonymousPipeClientStream owner, SafePipeHandle handle)
 		{
 			// this.owner = owner;
@@ -109,12 +109,12 @@ namespace System.IO.Pipes
 			get { return handle; }
 		}
 
-    public override void Dispose() {
-      if (handle != null) {
-        handle.Dispose();
-        handle = null;
-      }
-    }
+		public override void Dispose() {
+			if (handle != null) {
+				handle.Dispose();
+				handle = null;
+			}
+		}
 	}
 
 	class Win32AnonymousPipeServer : Win32AnonymousPipe, IAnonymousPipeServer
@@ -168,27 +168,27 @@ namespace System.IO.Pipes
 
 		public void DisposeLocalCopyOfClientHandle ()
 		{
-      if (client_handle != null) {
-        client_handle.Dispose();
-        client_handle = null;
-      }
+			if (client_handle != null) {
+				client_handle.Dispose();
+				client_handle = null;
+			}
 		}
 
-    public override void Dispose() {
-      if (server_handle != null) {
-        server_handle.Dispose();
-        server_handle = null;
-      }
-      if (client_handle != null) {
-        client_handle.Dispose();
-        client_handle = null;
-      }
-    }
+		public override void Dispose() {
+			if (server_handle != null) {
+				server_handle.Dispose();
+				server_handle = null;
+			}
+			if (client_handle != null) {
+				client_handle.Dispose();
+				client_handle = null;
+			}
+		}
 
-    public string GetClientHandleAsString()
-    {
-      return client_handle.DangerousGetHandle().ToInt64().ToString(System.Globalization.NumberFormatInfo.InvariantInfo);
-    }
+		public string GetClientHandleAsString()
+		{
+			return client_handle.DangerousGetHandle().ToInt64().ToString(System.Globalization.NumberFormatInfo.InvariantInfo);
+		}
 	}
 
 	abstract class Win32NamedPipe : IPipe
@@ -222,12 +222,12 @@ namespace System.IO.Pipes
 			throw new NotImplementedException ();
 		}
 
-    public virtual bool IsBroken()
-    {
-      throw new NotImplementedException();
-    }
+		public virtual bool IsBroken()
+		{
+			throw new NotImplementedException();
+		}
 
-    public abstract void Dispose();
+		public abstract void Dispose();
 	}
 
 	class Win32NamedPipeClient : Win32NamedPipe, INamedPipeClient
@@ -303,12 +303,12 @@ namespace System.IO.Pipes
 			}
 		}
 
-    public override void Dispose() {
-      if (handle != null) {
-        handle.Dispose();
-        handle = null;
-      }
-    }
+		public override void Dispose() {
+			if (handle != null) {
+				handle.Dispose();
+				handle = null;
+			}
+		}
 	}
 
 	class Win32NamedPipeServer : Win32NamedPipe, INamedPipeServer
@@ -373,12 +373,12 @@ namespace System.IO.Pipes
 				throw Win32PipeError.GetException ();
 		}
 
-    public override void Dispose() {
-      if (handle != null) {
-        handle.Dispose();
-        handle = null;
-      }
-    }
+		public override void Dispose() {
+			if (handle != null) {
+				handle.Dispose();
+				handle = null;
+			}
+		}
 	}
 
 	[StructLayout (LayoutKind.Sequential)]

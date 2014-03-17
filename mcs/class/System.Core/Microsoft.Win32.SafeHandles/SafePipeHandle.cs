@@ -42,36 +42,36 @@ namespace Microsoft.Win32.SafeHandles
 		public SafePipeHandle (IntPtr preexistingHandle, bool ownsHandle)
 			: base (ownsHandle)
 		{
-      SetHandle (preexistingHandle);
+			SetHandle (preexistingHandle);
 		}
  
-    internal void SetHandle (IntPtr handle)
-    {
-      base.SetHandle(handle);
-    }
- 
-    /* required for unix tracking of pipe disconnects
-       and must be present here to support constructor accepting PipeHandle args */
-    internal SafePipeHandle DisposalHandle = null;
-
-    /* Required for unix tracking of pipe drain in anonymous pipes 
-       and must be present here to support constructor accepting PipeHandle args */
-    internal SafePipeHandle DrainHandle = null;
-
-		protected override bool ReleaseHandle ()
+		internal void SetHandle (IntPtr handle)
 		{
-      switch (Environment.OSVersion.Platform)
-      {
-        case PlatformID.Win32S:
-        case PlatformID.Win32Windows:
-        case PlatformID.Win32NT:
-        case PlatformID.WinCE:
-          // TODO: close win32 pipe handle
-          return true;
-        default:
-          MonoIOError result;
-          return MonoIO.Close(handle, out result);
-      }
+			base.SetHandle (handle);
+		}
+ 
+		/* required for unix tracking of pipe disconnects
+		   and must be present here to support constructor accepting PipeHandle args */
+		internal SafePipeHandle DisposalHandle = null;
+
+		/* Required for unix tracking of pipe drain in anonymous pipes 
+		   and must be present here to support constructor accepting PipeHandle args */
+		internal SafePipeHandle DrainHandle = null;
+
+		protected override bool ReleaseHandle()
+		{
+			switch (Environment.OSVersion.Platform)
+			{
+				case PlatformID.Win32S:
+				case PlatformID.Win32Windows:
+				case PlatformID.Win32NT:
+				case PlatformID.WinCE:
+					// TODO: close win32 pipe handle
+					return true;
+				default:
+					MonoIOError result;
+					return MonoIO.Close(handle, out result);
+			}
 		}
 	}
 }

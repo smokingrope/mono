@@ -56,23 +56,23 @@ convert_from_flags(int flags)
 
 gpointer _wapi_pipehandle_initialize (int fd, int handleFlags, gint32 *error, gboolean inherit)
 {
-  const int fdStringLen = 20;
-  gchar fdString[fdStringLen];
+	const int fdStringLen = 20;
+	gchar fdString[fdStringLen];
 	struct _WapiHandle_file file_handle = {0};
 	gpointer handle;
 	int flags;
 	
-  switch (handleFlags) {
-    case GENERIC_READ:
-    case GENERIC_WRITE:
-      break;
-    default:
+	switch (handleFlags) {
+		case GENERIC_READ:
+		case GENERIC_WRITE:
+			break;
+		default:
 	    DEBUG("%s: invalid handle flags %d "
-            "only GENERIC_READ(%d) / GENERIC_WRITE(%d) allowed", 
-            __func__, handleFlags, GENERIC_READ, GENERIC_WRITE);
-      SetLastError (*error = ERROR_NOT_SUPPORTED);
-      return (INVALID_HANDLE_VALUE);
-  }
+		  "only GENERIC_READ(%d) / GENERIC_WRITE(%d) allowed", 
+		  __func__, handleFlags, GENERIC_READ, GENERIC_WRITE);
+			SetLastError (*error = ERROR_NOT_SUPPORTED);
+			return (INVALID_HANDLE_VALUE);
+	}
 
 	DEBUG("%s: creating pipe handle, fd %d", __func__, fd);
 
@@ -93,41 +93,41 @@ gpointer _wapi_pipehandle_initialize (int fd, int handleFlags, gint32 *error, gb
 		return(INVALID_HANDLE_VALUE);
 	} 
  
-  flags = convert_from_flags(flags);
+	flags = convert_from_flags(flags);
 
-  if (flags != handleFlags) {
-    DEBUG ("%s: fcntl flags %d didnt match expected %d for fd %d", __func__, flags, handleFlags, fd);
-   
-    SetLastError( *error = ERROR_INVALID_DATA);
+	if (flags != handleFlags) {
+		DEBUG ("%s: fcntl flags %d didnt match expected %d for fd %d", __func__, flags, handleFlags, fd);
+ 	
+		SetLastError( *error = ERROR_INVALID_DATA);
 
-    // TODO: Remove this eventually
-    *error = flags;
-    return (INVALID_HANDLE_VALUE);
-  }
+		// TODO: Remove this eventually
+		*error = flags;
+		return (INVALID_HANDLE_VALUE);
+	}
 
 	file_handle.fileaccess=flags;
 #else
-  /* GOOGLE NATIVE CLIENT?.. this hasn't been tested ever...
-     copied from create_stdhandle below...
-     presumably we aren't allowed to call fcntl() and check that the handle specified
-     is valid in this scenario?
-     not sure why we would be allowed to read/write to an anonymous pipe
-     but not call fcntl on it, but thats the current guess
-   */
+	/* GOOGLE NATIVE CLIENT?.. this hasn't been tested ever...
+ 		copied from create_stdhandle below...
+ 		presumably we aren't allowed to call fcntl() and check that the handle specified
+ 		is valid in this scenario?
+ 		not sure why we would be allowed to read/write to an anonymous pipe
+ 		but not call fcntl on it, but thats the current guess
+ 	*/
 	file_handle.fileaccess = handleFlags;
 #endif
 
 	file_handle.fd = fd;
 
-  g_sprintf(fdString, "%d", fd);
-  
+	g_sprintf(fdString, "%d", fd);
+	
 	file_handle.filename = g_strconcat("<PIPE:", fdString, ">");
-  if (inherit) {
-    file_handle.security_attributes = g_new0(WapiSecurityAttributes, 1);
-    file_handle.security_attributes->bInheritHandle = inherit;
-  } else {
+	if (inherit) {
+		file_handle.security_attributes = g_new0(WapiSecurityAttributes, 1);
+		file_handle.security_attributes->bInheritHandle = inherit;
+	} else {
 	  file_handle.security_attributes=NULL;
-  }
+	}
 
 	/* TODO: no idea what implications of this field is, just copied from create_stdhandle */
 	file_handle.sharemode=0;

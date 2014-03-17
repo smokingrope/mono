@@ -299,7 +299,7 @@ namespace System.IO
 					       out MonoIOError error);
 
 		[MethodImplAttribute (MethodImplOptions.InternalCall)]
-    public extern static int ReadSafeHandle (SafeHandle handle, byte[] dest, int dest_offset, int count, out MonoIOError error);
+		public extern static int ReadSafeHandle (SafeHandle handle, byte[] dest, int dest_offset, int count, out MonoIOError error);
 		
 		[MethodImplAttribute (MethodImplOptions.InternalCall)]
 		public extern static int Write (IntPtr handle, [In] byte [] src,
@@ -439,28 +439,28 @@ namespace System.IO
 		}
 
 		// pipe handles
-  
-    // source constants in mono/utils/mono-poll.h
-    [Flags]
-    public enum PollFlags : short {
-      POLLIN = 1,
-      POLLPRI = 2,
-      POLLOUT = 4,
-      POLLERR = 8,
-      POLLHUP = 16,
-      POLLNVAL = 32
-    }
-    [MethodImplAttribute (MethodImplOptions.InternalCall)]
-    public extern static int PollFD(int fd, PollFlags events, out PollFlags revents, int timeout);
+	
+		// source constants in mono/utils/mono-poll.h
+		[Flags]
+		public enum PollFlags : short {
+			POLLIN = 1,
+			POLLPRI = 2,
+			POLLOUT = 4,
+			POLLERR = 8,
+			POLLHUP = 16,
+			POLLNVAL = 32
+		}
+		[MethodImplAttribute (MethodImplOptions.InternalCall)]
+		public extern static int PollFD(int fd, PollFlags events, out PollFlags revents, int timeout);
 
-    // source constants in mono/io-layer/io.h
-    public enum GetPipeHandleFlag : uint {
-      GENERIC_READ = 0x80000000U,
-      GENERIC_WRITE = 0x40000000U
-    };
+		// source constants in mono/io-layer/io.h
+		public enum GetPipeHandleFlag : uint {
+			GENERIC_READ = 0x80000000U,
+			GENERIC_WRITE = 0x40000000U
+		};
 
-    [MethodImplAttribute (MethodImplOptions.InternalCall)]
-    public extern static IntPtr GetPipeHandle(int fd, GetPipeHandleFlag flags, out MonoIOError error, bool inherit);
+		[MethodImplAttribute (MethodImplOptions.InternalCall)]
+		public extern static IntPtr GetPipeHandle(int fd, GetPipeHandleFlag flags, out MonoIOError error, bool inherit);
 		[MethodImplAttribute (MethodImplOptions.InternalCall)]
 		public extern static bool CreatePipe (out IntPtr read_handle, bool inheritReadHandle, out IntPtr write_handle, bool inheritWriteHandle);
 

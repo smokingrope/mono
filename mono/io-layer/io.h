@@ -21,12 +21,12 @@ typedef struct _WapiSecurityAttributes WapiSecurityAttributes;
 
 struct _WapiSecurityAttributes 
 {
-  // assuming this will either be the length of lpSecurityDescriptor 
-  // array in elements or the raw size in bytes
+	// assuming this will either be the length of lpSecurityDescriptor 
+	// array in elements or the raw size in bytes
 	guint32 nLength;
-  // store an array of dynamic security metadata?
+	// store an array of dynamic security metadata?
 	gpointer lpSecurityDescriptor;
-  // needed for anonymous pipes
+	// needed for anonymous pipes
 	gboolean bInheritHandle;
 };
 
@@ -213,8 +213,8 @@ extern gboolean SetFileAttributes (const gunichar2 *name, guint32 attrs);
 extern guint32 GetCurrentDirectory (guint32 length, gunichar2 *buffer);
 extern gboolean SetCurrentDirectory (const gunichar2 *path);
 extern gboolean CreatePipe (
-  gpointer *readpipe, WapiSecurityAttributes *readSecurity, 
-  gpointer *writepipe, WapiSecurityAttributes *writeSecurity);
+	gpointer *readpipe, WapiSecurityAttributes *readSecurity, 
+	gpointer *writepipe, WapiSecurityAttributes *writeSecurity);
 extern gpointer GetPipeHandle(int fd, int flags, gint32 *error, gboolean inherit);
 
 extern guint32 GetTempPath (guint32 len, gunichar2 *buf);

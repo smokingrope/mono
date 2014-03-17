@@ -41,7 +41,7 @@ struct _WapiHandle_file
 	gchar *filename;
 	struct _WapiFileShare *share_info;	/* Pointer into shared mem */
 	int fd;
-  struct _WapiSecurityAttributes *security_attributes;
+	struct _WapiSecurityAttributes *security_attributes;
 	guint32 fileaccess;
 	guint32 sharemode;
 	guint32 attrs;

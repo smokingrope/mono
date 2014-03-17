@@ -1039,8 +1039,8 @@ ves_icall_System_IO_MonoIO_get_ConsoleError ()
 
 MonoBoolean
 ves_icall_System_IO_MonoIO_CreatePipe (
-  HANDLE *read_handle, gboolean inheritReadHandle,
-  HANDLE *write_handle, gboolean inheritWriteHandle)
+	HANDLE *read_handle, gboolean inheritReadHandle,
+	HANDLE *write_handle, gboolean inheritWriteHandle)
 {
 	SECURITY_ATTRIBUTES readAttr = {0}, writeAttr = {0};
 	gboolean ret;
@@ -1072,28 +1072,28 @@ ves_icall_System_IO_MonoIO_CreatePipe (
  */
 gint32 ves_icall_System_IO_MonoIO_PollFD(gint32 fd, gint16 events, gint16 *revents, gint32 timeout)
 {
-  int result;
-  mono_pollfd poll;
+	int result;
+	mono_pollfd poll;
 
-  poll.fd = fd;
-  poll.events = events;
+	poll.fd = fd;
+	poll.events = events;
 
 #ifdef  DEBUG
-  g_message("%s: pollfd %d with flags %d", __func__, fd, events);
+	g_message("%s: pollfd %d with flags %d", __func__, fd, events);
 #endif
 
-  result = mono_poll (&poll, 1, timeout);
-  *revents = poll.revents;
+	result = mono_poll (&poll, 1, timeout);
+	*revents = poll.revents;
 
 #ifdef DEBUG
-  g_message("%s: pollfd result %d with flags %d", __func__, result, *revents);
+	g_message("%s: pollfd result %d with flags %d", __func__, result, *revents);
 #endif
 
-  if (result == -1) {
-    SetLastError (_wapi_get_win32_file_error (errno));
-  }
+	if (result == -1) {
+		SetLastError (_wapi_get_win32_file_error (errno));
+	}
 
-  return result;
+	return result;
 }
 
 /**
@@ -1109,7 +1109,7 @@ gint32 ves_icall_System_IO_MonoIO_PollFD(gint32 fd, gint16 events, gint16 *reven
  */
 gpointer ves_icall_System_IO_MonoIO_GetPipeHandle(int fd, int flags, gint32 *error, gboolean inherit)
 {
-  return GetPipeHandle(fd, flags, error, inherit);
+	return GetPipeHandle(fd, flags, error, inherit);
 }
 
 MonoBoolean ves_icall_System_IO_MonoIO_DuplicateHandle (HANDLE source_process_handle, 

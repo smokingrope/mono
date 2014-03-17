@@ -327,20 +327,20 @@ static void _wapi_set_last_path_error_from_errno (const gchar *dir,
 
 static void security_attributes_free(WapiSecurityAttributes *security)
 {
-  g_free(security);
+	g_free(security);
 }
 static WapiSecurityAttributes *security_attributes_shallowCopy(WapiSecurityAttributes *security)
 {
-  WapiSecurityAttributes *secAttr = NULL;
-  if (security != NULL && (
-      security->bInheritHandle == TRUE ||
-      (security->nLength != 0 && security->lpSecurityDescriptor != NULL))) {
-    secAttr = g_new0(WapiSecurityAttributes, 1);
-    secAttr->nLength = security->nLength;
-    secAttr->lpSecurityDescriptor = security->lpSecurityDescriptor;
-    secAttr->bInheritHandle = security->bInheritHandle;
-  }
-  return secAttr;
+	WapiSecurityAttributes *secAttr = NULL;
+	if (security != NULL && (
+			security->bInheritHandle == TRUE ||
+			(security->nLength != 0 && security->lpSecurityDescriptor != NULL))) {
+		secAttr = g_new0(WapiSecurityAttributes, 1);
+		secAttr->nLength = security->nLength;
+		secAttr->lpSecurityDescriptor = security->lpSecurityDescriptor;
+		secAttr->bInheritHandle = security->bInheritHandle;
+	}
+	return secAttr;
 }
 
 /* Handle ops.
@@ -361,9 +361,9 @@ static void file_close (gpointer handle, gpointer data)
 	if (file_handle->share_info)
 		_wapi_handle_share_release (file_handle->share_info);
 
-  if (file_handle->security_attributes) {
-    security_attributes_free(file_handle->security_attributes);
-  }
+	if (file_handle->security_attributes) {
+		security_attributes_free(file_handle->security_attributes);
+	}
 	
 	close (fd);
 }
@@ -1493,7 +1493,7 @@ gpointer CreateFile(const gunichar2 *name, guint32 fileaccess,
 		   filename, sharemode, fileaccess);
 	
 	fd = _wapi_open (filename, flags, perms);
-    
+		
 	/* If we were trying to open a directory with write permissions
 	 * (e.g. O_WRONLY or O_RDWR), this call will fail with
 	 * EISDIR. However, this is a bit bogus because calls to
@@ -3313,8 +3313,8 @@ extern gboolean SetCurrentDirectory (const gunichar2 *path)
 }
 
 gboolean CreatePipe (
-  gpointer *readpipe, WapiSecurityAttributes *readSecurity, 
-  gpointer *writepipe, WapiSecurityAttributes *writeSecurity)
+	gpointer *readpipe, WapiSecurityAttributes *readSecurity, 
+	gpointer *writepipe, WapiSecurityAttributes *writeSecurity)
 {
 	struct _WapiHandle_file pipe_read_handle = {0};
 	struct _WapiHandle_file pipe_write_handle = {0};
@@ -3353,7 +3353,7 @@ gboolean CreatePipe (
 
 	pipe_read_handle.fd = filedes [0];
 	pipe_read_handle.fileaccess = GENERIC_READ;
-  pipe_read_handle.security_attributes = security_attributes_shallowCopy(readSecurity);
+	pipe_read_handle.security_attributes = security_attributes_shallowCopy(readSecurity);
 	read_handle = _wapi_handle_new_fd (WAPI_HANDLE_PIPE, filedes[0],
 					   &pipe_read_handle);
 	if (read_handle == _WAPI_HANDLE_INVALID) {
@@ -3367,7 +3367,7 @@ gboolean CreatePipe (
 	
 	pipe_write_handle.fd = filedes [1];
 	pipe_write_handle.fileaccess = GENERIC_WRITE;
-  pipe_write_handle.security_attributes = security_attributes_shallowCopy(writeSecurity);
+	pipe_write_handle.security_attributes = security_attributes_shallowCopy(writeSecurity);
 	write_handle = _wapi_handle_new_fd (WAPI_HANDLE_PIPE, filedes[1],
 					    &pipe_write_handle);
 	if (write_handle == _WAPI_HANDLE_INVALID) {
@@ -3403,41 +3403,41 @@ gboolean CreatePipe (
  */
 gpointer GetPipeHandle(int fd, int flags, gint32 *error, gboolean inherit)
 {
-  struct _WapiHandle_file *file_handle;
-  int thr_ret;
-  gboolean ok;
-  gpointer handle;
+	struct _WapiHandle_file *file_handle;
+	int thr_ret;
+	gboolean ok;
+	gpointer handle;
 
-  *error = ERROR_SUCCESS;
-  handle = GINT_TO_POINTER (fd);
+	*error = ERROR_SUCCESS;
+	handle = GINT_TO_POINTER (fd);
 
-  DEBUG("%s: initialize handle %d with flags %d", __func__, fd, flags);
-  DEBUG("%s: GENERIC_READ=%d, GENERIC_WRITE=%d", __func__, GENERIC_READ, GENERIC_WRITE);
+	DEBUG("%s: initialize handle %d with flags %d", __func__, fd, flags);
+	DEBUG("%s: GENERIC_READ=%d, GENERIC_WRITE=%d", __func__, GENERIC_READ, GENERIC_WRITE);
 
-  // Conciously reusing same mutex from GetStdHandle() for GetPipeHandle()
-  // - is there really any benefit to making a new one?
-  pthread_cleanup_push ((void(*)(void *))mono_mutex_unlock_in_cleanup,
-            (void *)&stdhandle_mutex);
-  thr_ret = mono_mutex_lock (&stdhandle_mutex);
-  g_assert (thr_ret == 0);
+	// Conciously reusing same mutex from GetStdHandle() for GetPipeHandle()
+	// - is there really any benefit to making a new one?
+	pthread_cleanup_push ((void(*)(void *))mono_mutex_unlock_in_cleanup,
+						(void *)&stdhandle_mutex);
+	thr_ret = mono_mutex_lock (&stdhandle_mutex);
+	g_assert (thr_ret == 0);
 
-  ok = _wapi_lookup_handle (handle, WAPI_HANDLE_PIPE,
-          (gpointer *)&file_handle);
-  if (ok == FALSE) {
-    /* assume the pipe handle provided was setup somehow outside of mono,
-       and we try to initialize it in WAPI layer, let WAPI do checks
-       and generate error if the handle isn't what caller says it is */
-    handle = _wapi_pipehandle_initialize (fd, flags, error, inherit);
-  } else {
-    /* Add a reference to this handle */
-    _wapi_handle_ref (handle);
-  }
+	ok = _wapi_lookup_handle (handle, WAPI_HANDLE_PIPE,
+					(gpointer *)&file_handle);
+	if (ok == FALSE) {
+		/* assume the pipe handle provided was setup somehow outside of mono,
+ 			and we try to initialize it in WAPI layer, let WAPI do checks
+ 			and generate error if the handle isn't what caller says it is */
+		handle = _wapi_pipehandle_initialize (fd, flags, error, inherit);
+	} else {
+		/* Add a reference to this handle */
+		_wapi_handle_ref (handle);
+	}
 
-  thr_ret = mono_mutex_unlock (&stdhandle_mutex);
-  g_assert (thr_ret == 0);
-  pthread_cleanup_pop (0);
+	thr_ret = mono_mutex_unlock (&stdhandle_mutex);
+	g_assert (thr_ret == 0);
+	pthread_cleanup_pop (0);
 
-  return(handle);
+	return(handle);
 }
 
 guint32 GetTempPath (guint32 len, gunichar2 *buf)

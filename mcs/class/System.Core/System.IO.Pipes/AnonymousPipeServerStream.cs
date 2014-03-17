@@ -43,7 +43,7 @@ namespace System.IO.Pipes
 	[HostProtection (SecurityAction.LinkDemand, MayLeakOnAbort = true)]
 	public sealed class AnonymousPipeServerStream : PipeStream
 	{
-    private const int BUFFERLESS_SIZE = 1;
+		private const int BUFFERLESS_SIZE = 1;
 
 		public AnonymousPipeServerStream ()
 			: this (PipeDirection.Out)
@@ -103,9 +103,9 @@ namespace System.IO.Pipes
 			ClientSafePipeHandle = clientSafePipeHandle;
 		}
 
-    internal override void WaitForPipeDrainInternal() {
-      impl.WaitForPipeDrain();
-    }
+		internal override void WaitForPipeDrainInternal() {
+			impl.WaitForPipeDrain();
+		}
 
 		IAnonymousPipeServer impl;
 
@@ -123,10 +123,10 @@ namespace System.IO.Pipes
 			get { return PipeTransmissionMode.Byte; }
 		}
 
-    internal override bool IsBrokenInternal()
-    {
-      return impl.IsBroken(); 
-    }
+		internal override bool IsBrokenInternal()
+		{
+			return impl.IsBroken(); 
+		}
 
 		[MonoTODO]
 		public void DisposeLocalCopyOfClientHandle ()
@@ -136,14 +136,14 @@ namespace System.IO.Pipes
 
 		public string GetClientHandleAsString ()
 		{
-      return impl.GetClientHandleAsString();
+			return impl.GetClientHandleAsString();
 		}
 
-    protected override void Dispose (bool disposing)
-    {
-      base.Dispose(disposing);
-      if (disposing) { impl.Dispose(); }
-    }
+		protected override void Dispose (bool disposing)
+		{
+			base.Dispose(disposing);
+			if (disposing) { impl.Dispose(); }
+		}
 	}
 }
 
