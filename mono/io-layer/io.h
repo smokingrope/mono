@@ -212,9 +212,10 @@ extern gboolean GetFileAttributesEx (const gunichar2 *name,
 extern gboolean SetFileAttributes (const gunichar2 *name, guint32 attrs);
 extern guint32 GetCurrentDirectory (guint32 length, gunichar2 *buffer);
 extern gboolean SetCurrentDirectory (const gunichar2 *path);
+extern gboolean SetHandleInformation (gpointer handle, guint32 mask, guint32 flags);
 extern gboolean CreatePipe (
-	gpointer *readpipe, WapiSecurityAttributes *readSecurity, 
-	gpointer *writepipe, WapiSecurityAttributes *writeSecurity);
+	gpointer *readpipe, gpointer *writepipe, 
+	WapiSecurityAttributes *pipeAttributes,	guint32 size);
 extern gpointer GetPipeHandle(int fd, int flags, gint32 *error, gboolean inherit);
 
 extern guint32 GetTempPath (guint32 len, gunichar2 *buf);

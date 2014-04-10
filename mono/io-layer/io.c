@@ -3311,10 +3311,29 @@ extern gboolean SetCurrentDirectory (const gunichar2 *path)
 	g_free (utf8_path);
 	return result;
 }
+gboolean SetHandleInformation (gpointer handle, guint32 mask, guint32 flags)
+{
+	gboolean ret;
+	struct _WapiHandle_file *pipe;
+
+	ret = _wapi_lookup_handle (handle, WAPI_HANDLE_PIPE, (gpointer *)&pipe);
+	/*
+	 * Abbreviated SetHandleInformation is presently only useful in the case of setting bInheritHandle
+	 * on a pipe handle
+	 */
+	if (!ret) return(FALSE); 
+
+	if (mask != 0x01)  return(FALSE); 
+
+	pipe->security_attributes->bInheritHandle = flags & 0x01;
+	return(TRUE);
+}
 
 gboolean CreatePipe (
-	gpointer *readpipe, WapiSecurityAttributes *readSecurity, 
-	gpointer *writepipe, WapiSecurityAttributes *writeSecurity)
+	gpointer *readpipe,
+	gpointer *writepipe, 
+	WapiSecurityAttributes *pipeAttributes,
+	guint32 size)
 {
 	struct _WapiHandle_file pipe_read_handle = {0};
 	struct _WapiHandle_file pipe_write_handle = {0};
@@ -3353,7 +3372,7 @@ gboolean CreatePipe (
 
 	pipe_read_handle.fd = filedes [0];
 	pipe_read_handle.fileaccess = GENERIC_READ;
-	pipe_read_handle.security_attributes = security_attributes_shallowCopy(readSecurity);
+	pipe_read_handle.security_attributes = security_attributes_shallowCopy(pipeAttributes);
 	read_handle = _wapi_handle_new_fd (WAPI_HANDLE_PIPE, filedes[0],
 					   &pipe_read_handle);
 	if (read_handle == _WAPI_HANDLE_INVALID) {
@@ -3367,7 +3386,7 @@ gboolean CreatePipe (
 	
 	pipe_write_handle.fd = filedes [1];
 	pipe_write_handle.fileaccess = GENERIC_WRITE;
-	pipe_write_handle.security_attributes = security_attributes_shallowCopy(writeSecurity);
+	pipe_write_handle.security_attributes = security_attributes_shallowCopy(pipeAttributes);
 	write_handle = _wapi_handle_new_fd (WAPI_HANDLE_PIPE, filedes[1],
 					    &pipe_write_handle);
 	if (write_handle == _WAPI_HANDLE_INVALID) {

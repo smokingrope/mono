@@ -1042,20 +1042,30 @@ ves_icall_System_IO_MonoIO_CreatePipe (
 	HANDLE *read_handle, gboolean inheritReadHandle,
 	HANDLE *write_handle, gboolean inheritWriteHandle)
 {
-	SECURITY_ATTRIBUTES readAttr = {0}, writeAttr = {0};
+	SECURITY_ATTRIBUTES pipeAttr = {0};
 	gboolean ret;
 	
 	MONO_ARCH_SAVE_REGS;
 
-	readAttr.bInheritHandle=inheritReadHandle;
-	writeAttr.bInheritHandle=inheritWriteHandle;
+	pipeAttr.bInheritHandle=inheritReadHandle || inheritWriteHandle;
 	
-	ret=CreatePipe (read_handle, &readAttr, write_handle, &writeAttr);
+	// lock here?
+	ret=CreatePipe (read_handle, write_handle, &pipeAttr, 1/*UNUSED*/);
 	if(ret==FALSE) {
 		/* FIXME: throw an exception? */
 		return(FALSE);
 	}
-	
+	if (pipeAttr.bInheritHandle) {
+		ret = TRUE;
+                if (!inheritReadHandle) {
+			ret = SetHandleInformation(*read_handle, 0x01, 0x00);
+                } else if (!inheritWriteHandle) {
+			ret = SetHandleInformation(*write_handle, 0x01, 0x00);
+		}
+		if (!ret) return(FALSE);
+	}
+	// release lock here?
+
 	return(TRUE);
 }
 
