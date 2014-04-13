@@ -220,7 +220,7 @@ ves_icall_System_IO_MonoIO_CreatePipe (
   HANDLE *read_handle, gboolean inheritReadHandle,
 	HANDLE *write_handle, gboolean inheritWriteHandle) MONO_INTERNAL;
 
-extern gint32 ves_icall_System_IO_MonoIO_PollFD(gint32 fd, gint16 events, gint16 *revents, gint32 timeout) MONO_INTERNAL;
+extern gint32 ves_icall_System_IO_MonoIO_PollFD(gint32 fd, gint16 events, gint16 *revents, gint32 timeout, gint32 *error) MONO_INTERNAL;
 extern gpointer ves_icall_System_IO_MonoIO_GetPipeHandle(int fd, int flags, gint32 *error, gboolean inherit) MONO_INTERNAL;
 
 extern MonoBoolean ves_icall_System_IO_MonoIO_DuplicateHandle (HANDLE source_process_handle, 

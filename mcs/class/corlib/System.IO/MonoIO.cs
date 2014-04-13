@@ -451,7 +451,7 @@ namespace System.IO
 			POLLNVAL = 32
 		}
 		[MethodImplAttribute (MethodImplOptions.InternalCall)]
-		public extern static int PollFD(int fd, PollFlags events, out PollFlags revents, int timeout);
+		public extern static int PollFD(int fd, PollFlags events, out PollFlags revents, int timeout, out int error);
 
 		// source constants in mono/io-layer/io.h
 		public enum GetPipeHandleFlag : uint {

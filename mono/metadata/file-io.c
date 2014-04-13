@@ -1080,7 +1080,7 @@ ves_icall_System_IO_MonoIO_CreatePipe (
  *
  * Return value: 1 if any of the polled events are found, 0 if timeout expired, -1 for error
  */
-gint32 ves_icall_System_IO_MonoIO_PollFD(gint32 fd, gint16 events, gint16 *revents, gint32 timeout)
+gint32 ves_icall_System_IO_MonoIO_PollFD(gint32 fd, gint16 events, gint16 *revents, gint32 timeout, gint32 *error)
 {
 	int result;
 	mono_pollfd poll;
@@ -1100,7 +1100,9 @@ gint32 ves_icall_System_IO_MonoIO_PollFD(gint32 fd, gint16 events, gint16 *reven
 #endif
 
 	if (result == -1) {
-		SetLastError (_wapi_get_win32_file_error (errno));
+		*error = errno;
+	} else {
+		*error = 0;
 	}
 
 	return result;
@@ -1119,7 +1121,10 @@ gint32 ves_icall_System_IO_MonoIO_PollFD(gint32 fd, gint16 events, gint16 *reven
  */
 gpointer ves_icall_System_IO_MonoIO_GetPipeHandle(int fd, int flags, gint32 *error, gboolean inherit)
 {
+#ifdef HOST_WIN32
+#else
 	return GetPipeHandle(fd, flags, error, inherit);
+#endif
 }
 
 MonoBoolean ves_icall_System_IO_MonoIO_DuplicateHandle (HANDLE source_process_handle, 

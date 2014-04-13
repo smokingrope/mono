@@ -69,13 +69,15 @@ namespace System.IO.Pipes
 			// check whether disposal handle has POLLERR / POLLHUP
 			// and if so that means reader has closed the pipe
 			MonoIO.PollFlags revents;
+			int pollError;
 			int pollResult = MonoIO.PollFD(Handle.DisposalHandle.DangerousGetHandle().ToInt32(), 
 							MonoIO.PollFlags.POLLERR | MonoIO.PollFlags.POLLHUP,
-							out revents, 0);
+							out revents, 0, out pollError);
 			switch (pollResult) {
 				case -1:
 					// TODO: Better error reporting
-					throw new IOException("Failure during wait for pipe drain");
+					throw new IOException ("Failure during wait for pipe drain", 
+								new Win32Exception (pollError));
 
 				case 0:
 					// no POLLERR or POLLHUP means client has not been disposed
@@ -91,14 +93,15 @@ namespace System.IO.Pipes
 		public bool DoesHandleHaveDataToRead(int handle)
 		{
 			MonoIO.PollFlags revents;
-			int pollResult; 
+			int pollResult, pollError; 
 				
 			// Check whether read end of pipe has data remaining
-			pollResult = MonoIO.PollFD(handle, MonoIO.PollFlags.POLLIN, out revents, 0);
+			pollResult = MonoIO.PollFD(handle, MonoIO.PollFlags.POLLIN, out revents, 0, out pollError);
 			switch (pollResult) {
 				case -1:
 					// TODO: Better error reporting
-					throw new IOException("Failure while checking pipe stream");
+					throw new IOException ("Failure while checking pipe stream", 
+								new Win32Exception(pollError));
 
 				case 0:
 					// no POLLIN event means pipe buffer is empty
