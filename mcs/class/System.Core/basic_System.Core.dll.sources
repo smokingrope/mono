@@ -8,3 +8,7 @@
 ../corlib/System.Threading/AtomicBoolean.cs
 ../corlib/System.Collections.Generic/CollectionDebuggerView.cs
 ../corlib/System.Collections/HashPrimeNumbers.cs
+../corlib/System.IO/MonoIOError.cs
+../corlib/System.IO/MonoIO.cs
+../corlib/System.IO/MonoIOStat.cs
+
